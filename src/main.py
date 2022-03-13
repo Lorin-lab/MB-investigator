@@ -3,31 +3,46 @@ import clientConfigMenu
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from enum import Enum
+from easymodbus.modbusClient import ModbusClient
+import asyncio
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.config_data = {
+            "ip": "127.0.0.1",
+            "port": 502
+        }
+        self.MB_client = None
         self.initUI()
         self.statusBar().showMessage("Welcome")
 
-
     def openClientConfigMenu(self):
-        config_data = {
-            "mode" : ModbusMode.TCP,
-            "ip"    : "127.0.0.1",
-            "port" : "502"
-        }
-
-        menu = clientConfigMenu.clientConfigMenu(self, self.setClientConfig, config_data)
+        menu = clientConfigMenu.clientConfigMenu(self, self.setClientConfig, self.config_data)
         menu.show()
 
+    def tryClientConnect(self):
+        self.statusBar().showMessage("Try connecting to " + self.config_data["ip"] + " ...")
+        print("Try connecting to " + self.config_data["ip"] + " ...")
+        self.MB_client = ModbusClient(self.config_data["ip"], self.config_data["port"])
+        try:
+            self.MB_client.connect()
+            if self.MB_client.is_connected():
+                self.statusBar().showMessage("Successful connection")
+            else:
+                self.statusBar().showMessage("Connection failed")
+        except ConnectionRefusedError:
+            self.statusBar().showMessage("Connection Refused")
+        finally:
+            print("is coi" + str(self.MB_client.is_connected()))
+            #print(self.MB_client.__tcpClientSocket)
 
     def setClientConfig(self, config_data):
         print(config_data["ip"])
+        self.config_data["ip"] = config_data["ip"]
         print(config_data["port"])
-
+        self.config_data["port"] = config_data["port"]
 
     def initUI(self):
         self.setWindowTitle('MB-Investigator')
@@ -69,7 +84,7 @@ class MainWindow(QMainWindow):
         connect_toolbutton = QToolButton()
         connect_toolbutton.setArrowType(Qt.UpArrow)
         connect_toolbutton.setAutoRaise(True)
-        connect_toolbutton.clicked.connect(self.openClientConfigMenu)
+        connect_toolbutton.clicked.connect(self.tryClientConnect)
         self.toolbar.addWidget(connect_toolbutton)
 
         # diconnect button
@@ -85,11 +100,6 @@ class MainWindow(QMainWindow):
         Add_section_toolbuton.setAutoRaise(True)
         Add_section_toolbuton.clicked.connect(self.openClientConfigMenu)
         self.toolbar.addWidget(Add_section_toolbuton)
-
-
-class ModbusMode(Enum):
-    TCP = 1
-    RTU = 2
 
 
 if __name__ == '__main__':

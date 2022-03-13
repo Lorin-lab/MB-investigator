@@ -1,8 +1,5 @@
-import sys
-from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from main import ModbusMode
 
 
 class clientConfigMenu(QMainWindow):
@@ -15,7 +12,7 @@ class clientConfigMenu(QMainWindow):
 
     def validation(self):
         self.config_data["ip"] = self.IP_edit.text()
-        self.config_data["port"] = self.port_edit.text()
+        self.config_data["port"] = int(self.port_edit.text())
         self.data_send_back_fun(self.config_data)
         self.close()
 
@@ -55,7 +52,7 @@ class clientConfigMenu(QMainWindow):
         # Port Line edit
         self.port_edit = QLineEdit()
         self.port_edit.setValidator(QIntValidator())
-        self.port_edit.setText(config_data["port"])
+        self.port_edit.setText(str(config_data["port"]))
         self.port_edit.setMaxLength(5)
 
         flo = QFormLayout()

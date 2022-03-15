@@ -1,10 +1,12 @@
 import sys
 import clientConfigMenu
+from ModbusComTask import ModbusComTask
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from easymodbus.modbusClient import ModbusClient
 import asyncio
+
 
 
 class MainWindow(QMainWindow):
@@ -43,6 +45,13 @@ class MainWindow(QMainWindow):
         self.config_data["ip"] = config_data["ip"]
         print(config_data["port"])
         self.config_data["port"] = config_data["port"]
+
+    def tryClientDisconnect(self):
+        print("disconnect")
+
+    def addComTask(self):
+        task = ModbusComTask(self)
+        self.addDockWidget(Qt.RightDockWidgetArea, task)
 
     def initUI(self):
         self.setWindowTitle('MB-Investigator')
@@ -91,14 +100,14 @@ class MainWindow(QMainWindow):
         diconnect_toolbutton = QToolButton()
         diconnect_toolbutton.setArrowType(Qt.DownArrow)
         diconnect_toolbutton.setAutoRaise(True)
-        diconnect_toolbutton.clicked.connect(self.openClientConfigMenu)
+        diconnect_toolbutton.clicked.connect(self.tryClientDisconnect)
         self.toolbar.addWidget(diconnect_toolbutton)
 
-        # Add section button
+        # Add com task button
         Add_section_toolbuton = QToolButton()
         Add_section_toolbuton.setArrowType(Qt.RightArrow)
         Add_section_toolbuton.setAutoRaise(True)
-        Add_section_toolbuton.clicked.connect(self.openClientConfigMenu)
+        Add_section_toolbuton.clicked.connect(self.addComTask)
         self.toolbar.addWidget(Add_section_toolbuton)
 
 

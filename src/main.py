@@ -84,29 +84,29 @@ class MainWindow(QMainWindow):
 
         # config button
         client_config_toolbutton = QToolButton()
-        client_config_toolbutton.setArrowType(Qt.LeftArrow)
         client_config_toolbutton.setAutoRaise(True)
+        client_config_toolbutton.setIcon(QIcon("icons/outline_settings_black_24dp.png"))
         client_config_toolbutton.clicked.connect(self.openClientConfigMenu)
         self.toolbar.addWidget(client_config_toolbutton)
 
         # connect button
         connect_toolbutton = QToolButton()
-        connect_toolbutton.setArrowType(Qt.UpArrow)
         connect_toolbutton.setAutoRaise(True)
+        connect_toolbutton.setIcon(QIcon("icons/outline_link_black_24dp.png"))
         connect_toolbutton.clicked.connect(self.tryClientConnect)
         self.toolbar.addWidget(connect_toolbutton)
 
         # diconnect button
         diconnect_toolbutton = QToolButton()
-        diconnect_toolbutton.setArrowType(Qt.DownArrow)
         diconnect_toolbutton.setAutoRaise(True)
+        diconnect_toolbutton.setIcon(QIcon("icons/outline_link_off_black_24dp.png"))
         diconnect_toolbutton.clicked.connect(self.tryClientDisconnect)
         self.toolbar.addWidget(diconnect_toolbutton)
 
         # Add com task button
         Add_section_toolbuton = QToolButton()
-        Add_section_toolbuton.setArrowType(Qt.RightArrow)
         Add_section_toolbuton.setAutoRaise(True)
+        Add_section_toolbuton.setIcon(QIcon("icons/outline_add_box_black_24dp.png"))
         Add_section_toolbuton.clicked.connect(self.addComTask)
         self.toolbar.addWidget(Add_section_toolbuton)
 

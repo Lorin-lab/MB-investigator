@@ -8,8 +8,9 @@ class SettingsCom(QMainWindow):
         super(SettingsCom, self).__init__(parent)
 
         # Settings
-        self.ip = "127.0.01"
+        self.ip = "192.168.0.121"
         self.port = 502
+        self.timeout = 5.0
 
         # UI setup
         self.ui = self._setup_ui()

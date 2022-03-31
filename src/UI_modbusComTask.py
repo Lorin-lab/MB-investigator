@@ -56,8 +56,8 @@ class UiModbusComTask(object):
         h_layout = QHBoxLayout()
         v_layout.addLayout(h_layout)
 
-        valid_button = QPushButton()
-        valid_button.setText("Read/write")
+        self.read_write_button = QPushButton()
+        self.read_write_button.setText("Read/write")
         # valid_button.clicked.connect(self.validation)
-        h_layout.addWidget(valid_button)
+        h_layout.addWidget(self.read_write_button)
 

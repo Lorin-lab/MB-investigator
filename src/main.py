@@ -5,8 +5,8 @@ from ModbusComTask import ModbusComTask
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from easymodbus.modbusClient import ModbusClient
 
+from modbus_tk import modbus_tcp, hooks
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -24,24 +24,31 @@ class MainWindow(QMainWindow):
     def _try_connect_client(self):
         self.statusBar().showMessage("Try connecting to " + self.settings_com.ip + " ...")
         print("Try connecting to " + self.settings_com.ip + " ...")
-        self.MB_client = ModbusClient(self.settings_com.ip, self.settings_com.port)
+
+        self.MB_client = modbus_tcp.TcpMaster(self.settings_com.ip, self.settings_com.port, self.settings_com.timeout)
+        hooks.install_hook("modbus_tcp.TcpMaster.after_connect", self._on_client_connected)
+        hooks.install_hook("modbus_tcp.TcpMaster.after_close", self._on_client_disconnected)
+
         try:
-            self.MB_client.connect()
-            if self.MB_client.is_connected():
-                self.ui.status_bar.showMessage("Successful connection")
-            else:
-                self.ui.status_bar.showMessage("Connection failed")
+            self.MB_client.open()
         except ConnectionRefusedError:
             self.ui.status_bar.showMessage("Connection Refused")
         finally:
-            print("is coi" + str(self.MB_client.is_connected()))
-            #print(self.MB_client.__tcpClientSocket)
+            pass
 
     def _try_disconnect_client(self):
-        print("disconnect")
+        self.MB_client.close()
+
+    def _on_client_connected(self,master):
+        print("connected")
+        self.statusBar().showMessage("connected")
+
+    def _on_client_disconnected(self, master):
+        print("disconnected")
+        self.statusBar().showMessage("disconnected")
 
     def _add_com_task(self):
-        task = ModbusComTask(self)
+        task = ModbusComTask(self, self.MB_client)
         self.addDockWidget(Qt.RightDockWidgetArea, task)
 
     def _setup_ui(self):

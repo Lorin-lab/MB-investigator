@@ -1,114 +1,58 @@
 import sys
-import clientConfigMenu
+import SettingsCom
+import UI_main
 from ModbusComTask import ModbusComTask
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from easymodbus.modbusClient import ModbusClient
-import asyncio
-
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.config_data = {
-            "ip": "127.0.0.1",
-            "port": 502
-        }
+
+        self.settings_com = SettingsCom.SettingsCom(self)
         self.MB_client = None
-        self.initUI()
-        self.statusBar().showMessage("Welcome")
 
-    def openClientConfigMenu(self):
-        menu = clientConfigMenu.clientConfigMenu(self, self.setClientConfig, self.config_data)
-        menu.show()
+        # Setup UI
+        self.ui = self._setup_ui()
 
-    def tryClientConnect(self):
-        self.statusBar().showMessage("Try connecting to " + self.config_data["ip"] + " ...")
-        print("Try connecting to " + self.config_data["ip"] + " ...")
-        self.MB_client = ModbusClient(self.config_data["ip"], self.config_data["port"])
+    def _open_settings_com(self):
+        self.settings_com.show()
+
+    def _try_connect_client(self):
+        self.statusBar().showMessage("Try connecting to " + self.settings_com.ip + " ...")
+        print("Try connecting to " + self.settings_com.ip + " ...")
+        self.MB_client = ModbusClient(self.settings_com.ip, self.settings_com.port)
         try:
             self.MB_client.connect()
             if self.MB_client.is_connected():
-                self.statusBar().showMessage("Successful connection")
+                self.ui.status_bar.showMessage("Successful connection")
             else:
-                self.statusBar().showMessage("Connection failed")
+                self.ui.status_bar.showMessage("Connection failed")
         except ConnectionRefusedError:
-            self.statusBar().showMessage("Connection Refused")
+            self.ui.status_bar.showMessage("Connection Refused")
         finally:
             print("is coi" + str(self.MB_client.is_connected()))
             #print(self.MB_client.__tcpClientSocket)
 
-    def setClientConfig(self, config_data):
-        print(config_data["ip"])
-        self.config_data["ip"] = config_data["ip"]
-        print(config_data["port"])
-        self.config_data["port"] = config_data["port"]
-
-    def tryClientDisconnect(self):
+    def _try_disconnect_client(self):
         print("disconnect")
 
-    def addComTask(self):
+    def _add_com_task(self):
         task = ModbusComTask(self)
         self.addDockWidget(Qt.RightDockWidgetArea, task)
 
-    def initUI(self):
-        self.setWindowTitle('MB-Investigator')
-        self.setGeometry(400, 400, 600, 400)
-
-        # ****************************
-        # menu bar
-        # ****************************
-        self.menu_bar = self.menuBar()
-
-        # file menu
-        self.file_menu = self.menu_bar.addMenu('File')
-        self.file_menu.addAction('Save config')
-        self.file_menu.addAction('Import config')
-        self.file_menu.addAction('Quit')
-
-        # config menu
-        self.config_menu = self.menu_bar.addMenu('Config')
-        self.config_menu.addAction("Client config")
-
-        # ****************************
-        # Status bar
-        # ****************************
-        self.statusBar()
-
-        # ****************************
-        # Tool bar
-        # ****************************
-        self.toolbar = self.addToolBar("toolBar")
-
-        # config button
-        client_config_toolbutton = QToolButton()
-        client_config_toolbutton.setAutoRaise(True)
-        client_config_toolbutton.setIcon(QIcon("icons/outline_settings_black_24dp.png"))
-        client_config_toolbutton.clicked.connect(self.openClientConfigMenu)
-        self.toolbar.addWidget(client_config_toolbutton)
-
-        # connect button
-        connect_toolbutton = QToolButton()
-        connect_toolbutton.setAutoRaise(True)
-        connect_toolbutton.setIcon(QIcon("icons/outline_link_black_24dp.png"))
-        connect_toolbutton.clicked.connect(self.tryClientConnect)
-        self.toolbar.addWidget(connect_toolbutton)
-
-        # diconnect button
-        diconnect_toolbutton = QToolButton()
-        diconnect_toolbutton.setAutoRaise(True)
-        diconnect_toolbutton.setIcon(QIcon("icons/outline_link_off_black_24dp.png"))
-        diconnect_toolbutton.clicked.connect(self.tryClientDisconnect)
-        self.toolbar.addWidget(diconnect_toolbutton)
-
-        # Add com task button
-        Add_section_toolbuton = QToolButton()
-        Add_section_toolbuton.setAutoRaise(True)
-        Add_section_toolbuton.setIcon(QIcon("icons/outline_add_box_black_24dp.png"))
-        Add_section_toolbuton.clicked.connect(self.addComTask)
-        self.toolbar.addWidget(Add_section_toolbuton)
+    def _setup_ui(self):
+        ui = UI_main.UiMain()
+        ui.init_ui(self)
+        ui.client_config_toolbutton.clicked.connect(self._open_settings_com)
+        ui.connect_toolbutton.clicked.connect(self._try_connect_client)
+        ui.diconnect_toolbutton.clicked.connect(self._try_disconnect_client)
+        ui.Add_section_toolbuton.clicked.connect(self._add_com_task)
+        ui.status_bar.showMessage("Welcome")
+        return ui
 
 
 if __name__ == '__main__':

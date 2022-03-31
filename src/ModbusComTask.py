@@ -25,6 +25,11 @@ class ModbusComTask(QDockWidget):
         start_address = int(self.start_address_edit.text())
         num_registre = int(self.num_registre_edit.text())
 
+        if start_address + num_registre > 65535:
+            delta = 65535 - start_address
+            num_registre = delta
+            self.num_registre_edit.setText(str(delta))
+
         for i in range(start_address, start_address + num_registre):
             self.raw_values.append(None)
 
@@ -68,29 +73,30 @@ class ModbusComTask(QDockWidget):
         # ****************************
         # IP Line edit
         self.start_address_edit = QLineEdit()
-        self.start_address_edit.setValidator(QIntValidator())
+        self.start_address_edit.setValidator(QIntValidator(0, 65535))
         self.start_address_edit.setMaxLength(15)
         self.start_address_edit.setText("0")
+        self.start_address_edit.returnPressed.connect(self.resetTable)
 
         # Port Line edit
         self.num_registre_edit = QLineEdit()
-        self.num_registre_edit.setValidator(QIntValidator())
+        self.num_registre_edit.setValidator(QIntValidator(0, 2000))
         self.num_registre_edit.setText("10")
         self.num_registre_edit.setMaxLength(5)
+        self.num_registre_edit.returnPressed.connect(self.resetTable)
 
         flo = QFormLayout()
         flo.addRow("Start address", self.start_address_edit)
         flo.addRow("Number of registre", self.num_registre_edit)
         v_layout.addLayout(flo)
 
-        self.start_address_edit.returnPressed.connect(self.resetTable)
-        self.num_registre_edit.returnPressed.connect(self.resetTable)
 
         # ****************************
         # table
         # ****************************
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(3)
+        self.table_widget.setHorizontalHeaderLabels(["Address", "Label", "Value"])
         v_layout.addWidget(self.table_widget)
 
         # ****************************

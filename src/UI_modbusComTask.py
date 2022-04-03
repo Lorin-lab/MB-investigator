@@ -1,6 +1,7 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from datetime import datetime
 
 
 class UiModbusComTask(object):
@@ -54,4 +55,8 @@ class UiModbusComTask(object):
         v_layout.addWidget(self.table_widget)
 
     def status_print(self, text):
-        self.status_bar.insertPlainText("\n" + text)
+
+        now = datetime.now()
+        current_time = now.strftime("[%H:%M:%S] ")
+        self.status_bar.insertPlainText("\n" + current_time + text)
+        self.status_bar.ensureCursorVisible()

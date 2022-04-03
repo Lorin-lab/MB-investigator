@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
 
     def _try_connect_client(self):
         self.statusBar().showMessage("Try connecting to " + self.settings_com.ip + " ...")
+        self.repaint()
         print("Try connecting to " + self.settings_com.ip + " ...")
 
         self.MB_client = modbus_tcp.TcpMaster(self.settings_com.ip, self.settings_com.port, self.settings_com.timeout)
@@ -35,10 +36,14 @@ class MainWindow(QMainWindow):
         for task in self.task_list:
             task.MB_client = self.MB_client
 
+
         try:
             self.MB_client.open()
         except ConnectionRefusedError:
             self.ui.status_bar.showMessage("Connection Refused")
+        except OSError as ex:
+            print(ex)
+            self.ui.status_bar.showMessage(str(ex))
         finally:
             pass
 

@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import UI_modbusComTask
 import SettingsTask
+from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
 
@@ -49,14 +50,28 @@ class ModbusComTask(QDockWidget):
 
     def _read_execute(self):
         if self.MB_client is None:
-            print("pas connecté")
+            self.ui.status_print("Client not connected")
             return
 
-        datas = self.MB_client.execute(
-            1, self.settings.read_func, self.settings.starting_address, self.settings.quantity)
-        print(datas)
-        self.raw_mb_datas = datas
-        self._update_table_value()
+        self.ui.status_print("Reading...")
+
+        try:
+            datas = self.MB_client.execute(
+                1, self.settings.read_func, self.settings.starting_address, self.settings.quantity)
+            print(datas)
+            self.raw_mb_datas = datas
+            self._update_table_value()
+            self.ui.status_print("Successful reading")
+        except ModbusError as ex:
+            error = ex.get_exception_code()
+            if error == 1:
+                self.ui.status_print("MB exception " + str(error) + ": Illegal Function")
+            if error == 2:
+                self.ui.status_print("MB exception " + str(error) + ": Illegal data address")
+            if error == 3:
+                self.ui.status_print("MB exception " + str(error) + ": Illegal data value")
+            if error == 4:
+                self.ui.status_print("MB exception " + str(error) + ": Slave device failure")
 
     def _setup_ui(self):
         ui = UI_modbusComTask.UiModbusComTask()

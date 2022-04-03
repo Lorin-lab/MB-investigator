@@ -4,11 +4,12 @@ import UI_settingsCom
 
 
 class SettingsCom(QMainWindow):
-    def __init__(self, parent):
+    def __init__(self, parent, call_back_func):
         super(SettingsCom, self).__init__(parent)
+        self.call_back_func = call_back_func
 
         # Settings
-        self.ip = "192.168.0.121"
+        self.ip = "192.168.0.123"
         self.port = 502
         self.timeout = 5.0
 
@@ -19,6 +20,7 @@ class SettingsCom(QMainWindow):
         self.ip = self.ui.IP_edit.text()
         self.port = int(self.ui.port_edit.text())
         self.close()
+        self.call_back_func()
 
     def _cancel(self):
         self.ui.port_edit.setText(str(self.port))

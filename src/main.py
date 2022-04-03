@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.settings_com = SettingsCom.SettingsCom(self)
+        self.settings_com = SettingsCom.SettingsCom(self, self._on_settings_update)
         self.MB_client = None
         self.task_list = []
 
@@ -24,6 +24,14 @@ class MainWindow(QMainWindow):
     def _open_settings_com(self):
         self.settings_com.show()
 
+    def _on_settings_update(self):
+        self.MB_client = None
+        self._update_task_client_objet()
+
+    def _update_task_client_objet(self):
+        for task in self.task_list:
+            task.MB_client = self.MB_client
+
     def _try_connect_client(self):
         self.statusBar().showMessage("Try connecting to " + self.settings_com.ip + " ...")
         self.repaint()
@@ -33,9 +41,7 @@ class MainWindow(QMainWindow):
         hooks.install_hook("modbus_tcp.TcpMaster.after_connect", self._on_client_connected)
         hooks.install_hook("modbus_tcp.TcpMaster.after_close", self._on_client_disconnected)
 
-        for task in self.task_list:
-            task.MB_client = self.MB_client
-
+        self._update_task_client_objet()
 
         try:
             self.MB_client.open()
@@ -48,15 +54,18 @@ class MainWindow(QMainWindow):
             pass
 
     def _try_disconnect_client(self):
-        self.MB_client.close()
+        if self.MB_client is not None:
+            self.MB_client.close()
 
-    def _on_client_connected(self,master):
+    def _on_client_connected(self, master):
         print("connected")
         self.statusBar().showMessage("connected")
 
     def _on_client_disconnected(self, master):
         print("disconnected")
         self.statusBar().showMessage("disconnected")
+        self.MB_client = None
+        self._update_task_client_objet()
 
     def _add_com_task(self):
         task = ModbusComTask(self, self.MB_client)

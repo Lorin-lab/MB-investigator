@@ -14,9 +14,12 @@ class MainWindow(QMainWindow):
 
         self.settings_com = SettingsCom.SettingsCom(self)
         self.MB_client = None
+        self.task_list = []
 
         # Setup UI
         self.ui = self._setup_ui()
+
+        self._add_com_task()
 
     def _open_settings_com(self):
         self.settings_com.show()
@@ -28,6 +31,9 @@ class MainWindow(QMainWindow):
         self.MB_client = modbus_tcp.TcpMaster(self.settings_com.ip, self.settings_com.port, self.settings_com.timeout)
         hooks.install_hook("modbus_tcp.TcpMaster.after_connect", self._on_client_connected)
         hooks.install_hook("modbus_tcp.TcpMaster.after_close", self._on_client_disconnected)
+
+        for task in self.task_list:
+            task.MB_client = self.MB_client
 
         try:
             self.MB_client.open()
@@ -49,6 +55,7 @@ class MainWindow(QMainWindow):
 
     def _add_com_task(self):
         task = ModbusComTask(self, self.MB_client)
+        self.task_list.append(task)
         self.addDockWidget(Qt.RightDockWidgetArea, task)
 
     def _setup_ui(self):

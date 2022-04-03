@@ -1,4 +1,5 @@
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 
@@ -8,47 +9,13 @@ class UiModbusComTask(object):
         widget = QWidget()
         widget.setObjectName("mainWidget")
         widget.setStyleSheet("QWidget#mainWidget { "
-                                 "background-color : #CFCFCF;"
-                                 "border-radius: 10px; "
-                                 "margin: 2px;"
-                                 "border: 2px solid black;"
+                             "background-color : #CFCFCF;"
+                             "border-radius: 5px; "
+                             "margin: 2px;"
+                             "border: 2px solid black;"
                              "}")
         widget.setLayout(v_layout)
         main_window.setWidget(widget)
-
-        # ****************************
-        # Selection mode
-        # ****************************
-        self.cb = QComboBox()
-        v_layout.addWidget(self.cb)
-
-        # ****************************
-        # Line edit
-        # ****************************
-        # IP Line edit
-        self.start_address_edit = QLineEdit()
-        self.start_address_edit.setValidator(QIntValidator(0, 65535))
-        self.start_address_edit.setMaxLength(15)
-        self.start_address_edit.setText("0")
-
-        # Port Line edit
-        self.num_registre_edit = QLineEdit()
-        self.num_registre_edit.setValidator(QIntValidator(0, 2000))
-        self.num_registre_edit.setText("10")
-        self.num_registre_edit.setMaxLength(5)
-
-        flo = QFormLayout()
-        flo.addRow("Start address", self.start_address_edit)
-        flo.addRow("Number of registre", self.num_registre_edit)
-        v_layout.addLayout(flo)
-
-        # ****************************
-        # table
-        # ****************************
-        self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(3)
-        self.table_widget.setHorizontalHeaderLabels(["Address", "Label", "Value"])
-        v_layout.addWidget(self.table_widget)
 
         # ****************************
         # Main buttons
@@ -58,6 +25,33 @@ class UiModbusComTask(object):
 
         self.read_write_button = QPushButton()
         self.read_write_button.setText("Read/write")
-        # valid_button.clicked.connect(self.validation)
         h_layout.addWidget(self.read_write_button)
 
+        self.open_settings_btn = QPushButton()
+        self.open_settings_btn.setText("Modbus parameters")
+        h_layout.addWidget(self.open_settings_btn)
+
+        # ****************************
+        # Status bar
+        # ****************************
+        self.status_bar = QPlainTextEdit()
+        self.status_bar.setFixedHeight(40)
+        self.status_bar.setTextInteractionFlags(Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
+        self.status_print("Ready")
+        v_layout.addWidget(self.status_bar)
+
+        # ****************************
+        # table
+        # ****************************
+        self.table_widget = QTableWidget()
+        self.table_widget.setColumnCount(3)
+        self.table_widget.setHorizontalHeaderLabels(["Address", "Label", "Value"])
+        self.table_widget.verticalHeader().hide()
+        self.table_widget.setStyleSheet("QTableWidget { "
+                                        "background-color : #CFCFCF;"
+                                        "border: 2px solid black;"
+                                        "}")
+        v_layout.addWidget(self.table_widget)
+
+    def status_print(self, text):
+        self.status_bar.insertPlainText("\n" + text)

@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 class UiMain(object):
     def init_ui(self, main_window):
         main_window.setWindowTitle('MB-Investigator')
-        main_window.setGeometry(400, 400, 600, 400)
+        main_window.setGeometry(400, 400, 340, 400)
 
         # ****************************
         # menu bar

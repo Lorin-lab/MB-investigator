@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         # Setup UI
         self.ui = self._setup_ui()
 
-        self._add_com_task()
+        #self._add_com_task()
 
     def _open_settings_com(self):
         self.settings_com.show()

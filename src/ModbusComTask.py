@@ -17,6 +17,7 @@ class ModbusComTask(QDockWidget):
 
         self.ui = self._setup_ui()
         self._on_settings_update()
+        self._open_settings()
 
     def _open_settings(self):
         self.settings.show()

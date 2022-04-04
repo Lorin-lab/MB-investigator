@@ -1,3 +1,5 @@
+import socket
+
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -55,6 +57,7 @@ class ModbusComTask(QDockWidget):
             return
 
         self.ui.status_print("Reading...")
+        self.repaint()
 
         try:
             datas = self.MB_client.execute(
@@ -73,6 +76,8 @@ class ModbusComTask(QDockWidget):
                 self.ui.status_print("MB exception " + str(error) + ": Illegal data value")
             if error == 4:
                 self.ui.status_print("MB exception " + str(error) + ": Slave device failure")
+        except OSError as ex:
+            self.ui.status_print(str(ex))
 
     def _setup_ui(self):
         ui = UI_modbusComTask.UiModbusComTask()

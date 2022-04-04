@@ -47,11 +47,11 @@ class MainWindow(QMainWindow):
             self.MB_client.open()
         except ConnectionRefusedError:
             self.ui.status_bar.showMessage("Connection Refused")
+            self.MB_client = None
         except OSError as ex:
             print(ex)
             self.ui.status_bar.showMessage(str(ex))
-        finally:
-            pass
+            self.MB_client = None
 
     def _try_disconnect_client(self):
         if self.MB_client is not None:

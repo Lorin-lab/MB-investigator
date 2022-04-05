@@ -1,12 +1,14 @@
 import sys
 import SettingsCom
 import UI_main
+import about_win
 from ModbusComTask import ModbusComTask
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from modbus_tk import modbus_tcp, hooks
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -69,8 +71,12 @@ class MainWindow(QMainWindow):
 
     def _add_com_task(self):
         task = ModbusComTask(self, self.MB_client)
-        self.task_list.append(task)
         self.addDockWidget(Qt.RightDockWidgetArea, task)
+        self.task_list.append(task)
+
+        # set dock as tab
+        if len(self.task_list) > 1:
+            self.tabifyDockWidget(self.task_list[0], task)
 
     def _setup_ui(self):
         ui = UI_main.UiMain()
@@ -79,6 +85,10 @@ class MainWindow(QMainWindow):
         ui.connect_toolbutton.clicked.connect(self._try_connect_client)
         ui.diconnect_toolbutton.clicked.connect(self._try_disconnect_client)
         ui.Add_section_toolbuton.clicked.connect(self._add_com_task)
+
+        about = about_win.AboutWin(self)
+        ui.action_about.triggered.connect(about.show)
+        ui.action_quit.triggered.connect(self.close)
         ui.status_bar.showMessage("Welcome")
         return ui
 

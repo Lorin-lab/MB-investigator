@@ -49,24 +49,24 @@ class SettingsTask(QMainWindow):
         if index_r == 0:
             self.read_func = cst.READ_COILS
             if index_w == 0:
-                self.coil_write_func = cst.WRITE_SINGLE_COIL
+                self.write_func = cst.WRITE_SINGLE_COIL
             else:
-                self.coil_write_func = cst.WRITE_MULTIPLE_COILS
+                self.write_func = cst.WRITE_MULTIPLE_COILS
         # Discrete input
         elif index_r == 1:
             self.read_func = cst.READ_DISCRETE_INPUTS
-            self.register_write_func = None
+            self.write_func = None
         # holding register
         elif index_r == 2:
             self.read_func = cst.READ_HOLDING_REGISTERS
             if index_w == 0:
-                self.register_write_func = cst.WRITE_SINGLE_REGISTER
+                self.write_func = cst.WRITE_SINGLE_REGISTER
             else:
-                self.register_write_func = cst.WRITE_MULTIPLE_REGISTERS
+                self.write_func = cst.WRITE_MULTIPLE_REGISTERS
         # Input register
         elif index_r == 3:
             self.read_func = cst.READ_INPUT_REGISTERS
-            self.register_write_func = None
+            self.write_func = None
 
         self.close()
         self.call_back_func()

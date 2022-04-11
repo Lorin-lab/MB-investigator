@@ -24,9 +24,13 @@ class UiModbusComTask(object):
         h_layout = QHBoxLayout()
         v_layout.addLayout(h_layout)
 
-        self.read_write_button = QPushButton()
-        self.read_write_button.setText("Read/write")
-        h_layout.addWidget(self.read_write_button)
+        self.read_button = QPushButton()
+        self.read_button.setText("Read")
+        h_layout.addWidget(self.read_button)
+
+        self.write_button = QPushButton()
+        self.write_button.setText("Write")
+        h_layout.addWidget(self.write_button)
 
         self.open_settings_btn = QPushButton()
         self.open_settings_btn.setText("Modbus parameters")

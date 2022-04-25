@@ -1,0 +1,5 @@
+# pycharm directory
+venv/
+# pyinstaller directory
+build/
+dist/

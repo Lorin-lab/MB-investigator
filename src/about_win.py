@@ -9,6 +9,5 @@ class AboutWin(QMainWindow):
         self.ui = self._setup_ui()
 
     def _setup_ui(self):
-        ui = UI_about_win.UiAboutWin()
-        ui.init_ui(self)
+        ui = UI_about_win.UiAboutWin(self)
         return ui

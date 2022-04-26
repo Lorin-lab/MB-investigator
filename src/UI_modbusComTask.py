@@ -5,7 +5,8 @@ from datetime import datetime
 
 
 class UiModbusComTask(object):
-    def init_ui(self, main_window):
+    """This class contains all the widgets and configures them for the modbus task menu."""
+    def __init__(self, main_window):
         v_layout = QVBoxLayout()
         widget = QWidget()
         widget.setObjectName("mainWidget")
@@ -39,11 +40,11 @@ class UiModbusComTask(object):
         # ****************************
         # Status bar
         # ****************************
-        self.status_bar = QPlainTextEdit()
-        self.status_bar.setFixedHeight(40)
-        self.status_bar.setTextInteractionFlags(Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
-        self.status_print("Ready")
-        v_layout.addWidget(self.status_bar)
+        self.plain_text_log = QPlainTextEdit()
+        self.plain_text_log.setFixedHeight(40)
+        self.plain_text_log.setTextInteractionFlags(Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
+        self.log_print("Ready")
+        v_layout.addWidget(self.plain_text_log)
 
         # ****************************
         # table
@@ -58,9 +59,9 @@ class UiModbusComTask(object):
                                         "}")
         v_layout.addWidget(self.table_widget)
 
-    def status_print(self, text):
-
+    def log_print(self, text):
+        """insert log into the plain text widget"""
         now = datetime.now()
         current_time = now.strftime("[%H:%M:%S] ")
-        self.status_bar.insertPlainText("\n" + current_time + text)
-        self.status_bar.ensureCursorVisible()
+        self.plain_text_log.insertPlainText("\n" + current_time + text)
+        self.plain_text_log.ensureCursorVisible()

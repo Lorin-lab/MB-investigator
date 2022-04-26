@@ -4,6 +4,7 @@ from PyQt5.QtCore import *
 
 
 class UiAboutWin(object):
+    """This class contains all the widgets and configures them for the about window."""
     def __init__(self, main_window):
         main_window.setWindowTitle('About')
         v_layout = QVBoxLayout()

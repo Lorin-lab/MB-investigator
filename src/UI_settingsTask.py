@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import *
 
 
 class UiSettingsTask(object):
-    def init_ui(self, main_window):
+    """This class contains all the widgets and configures them for the task configuration menu."""
+    def __init__(self, main_window):
         main_window.setWindowTitle('Task settings')
         v_layout = QVBoxLayout()
         widget = QWidget()
@@ -24,12 +25,10 @@ class UiSettingsTask(object):
         # Starting address edit
         self.start_address_edit = QLineEdit()
         self.start_address_edit.setValidator(QIntValidator(0, 65535))
-        #self.start_address_edit.setMaxLength(15)
 
         # length edit
         self.quantity_edit = QLineEdit()
         self.quantity_edit.setValidator(QIntValidator(0, 2000))
-        #self.quantity_edit.setMaxLength(5)
 
         # write function list
         self.write_func_list = QComboBox()

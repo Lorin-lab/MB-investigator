@@ -1,165 +1,187 @@
-import socket
-
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-import UI_modbusComTask
-import SettingsTask
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
+import UI_modbusComTask
+import SettingsTask
+
 
 class ModbusComTask(QDockWidget):
-    def __init__(self, parent, MB_client):
+    """Object for reading and writing to a modbus address range according to parameters.
+    All presented with a graphic interface.
+    """
+    def __init__(self, parent, mb_client):
         super(ModbusComTask, self).__init__("New task", parent)
-        self.MB_client = MB_client
-        self.settings = SettingsTask.SettingsTask(self, self._on_settings_update)
+        self.mb_client = mb_client
 
-        self.raw_mb_datas = [None]
+        # Instantiates the modbus parameters and their menu.
+        self._settings = SettingsTask.SettingsTask(self, self._on_settings_update)
+        self._raw_mb_datas = [None]
 
-        self.ui = self._setup_ui()
+        self._ui = self._setup_ui()
         self._on_settings_update()
         self._open_settings()
 
     def _open_settings(self):
-        self.settings.show()
+        """Opens the modbus configuration menu."""
+        self._settings.show()
 
     def _on_settings_update(self):
-        self.setWindowTitle(self.settings.task_name)
+        """Is called when the new modbus configuration is validated. Update widgets"""
+        print(self._settings.read_func)
+        print(self._settings.write_func)
+        print("!")
+        # Update dock title
+        self.setWindowTitle(self._settings.task_name)
 
-        # disable/enable Write button
-        if self.settings.write_func is None:
-            self.ui.write_button.setDisabled(True)
+        # disable/enable Writing button
+        if self._settings.write_func is None:
+            self._ui.write_button.setDisabled(True)
         else:
-            self.ui.write_button.setEnabled(True)
+            self._ui.write_button.setEnabled(True)
 
-        # update raw datas
-        self.raw_mb_datas = [None]
-        for i in range(self.settings.quantity):
-            self.raw_mb_datas.append(None)
+        # Reset raw data list
+        self._raw_mb_datas = [None]
+        for i in range(self._settings.quantity):
+            self._raw_mb_datas.append(None)
 
-        # update table
-        self.ui.table_widget.setRowCount(self.settings.quantity)
-        for i in range(self.settings.quantity):
+        # Reset table
+        self._ui.table_widget.setRowCount(self._settings.quantity)
+        for i in range(self._settings.quantity):
             # column 0 : modbus address
-            item = QTableWidgetItem(str(self.settings.starting_address + i))
+            item = QTableWidgetItem(str(self._settings.starting_address + i))
             item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self.ui.table_widget.setItem(i, 0, item)
+            self._ui.table_widget.setItem(i, 0, item)
             # column 1 : libelle
-            self.ui.table_widget.setItem(i, 1, QTableWidgetItem(""))
+            self._ui.table_widget.setItem(i, 1, QTableWidgetItem(""))
 
+        # update data in to table
         self._update_table_value()
 
     def _update_table_value(self):
-        for i in range(self.settings.quantity):
+        """Update value column of the table"""
+        for i in range(self._settings.quantity):
             # column 2 : value
-            item = QTableWidgetItem(str(self.raw_mb_datas[i]))
-            if self.settings.write_func is None:
+            item = QTableWidgetItem(str(self._raw_mb_datas[i]))
+            if self._settings.write_func is None:
                 item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self.ui.table_widget.setItem(i, 2, item)
+            self._ui.table_widget.setItem(i, 2, item)
 
     def _on_table_item_changed(self, item: QTableWidgetItem):
-        if item.column() == 2:
+        """Is called when a data is change in the table."""
+        if item.column() == 2:  # Column value
+            """Checking value prompt by the user"""
             try:
                 value = int(item.text())
                 if value < 0:
                     value = 0
-                elif value > 1 and (self.settings.write_func == cst.WRITE_MULTIPLE_COILS or self.settings.write_func == cst.WRITE_SINGLE_COIL):
+                elif value > 1 and \
+                        (self._settings.write_func == cst.WRITE_MULTIPLE_COILS or
+                         self._settings.write_func == cst.WRITE_SINGLE_COIL):
                     value = 1
                 elif value > 65535:
                     value = 65535
-                self.raw_mb_datas[item.row()] = value
+                self._raw_mb_datas[item.row()] = value
             except ValueError:
-                pass
-            item.setText(str(self.raw_mb_datas[item.row()]))
+                # if int parse fail then undo change
+                item.setText(str(self._raw_mb_datas[item.row()]))
 
-    def _read_execute(self):
-        if self.MB_client is None:
-            self.ui.status_print("Client not connected")
+    def _mb_reading_execute(self):
+        """Execute modbus reading function"""
+        # Checking client
+        if self.mb_client is None:
+            self._ui.log_print("Client not connected")
             return
 
-        self.ui.status_print("Reading...")
+        self._ui.log_print("Reading...")
         self.repaint()
 
         try:
-            datas = self.MB_client.execute(
-                1, self.settings.read_func, self.settings.starting_address, self.settings.quantity)
+            # Reading data
+            datas = self.mb_client.execute(
+                1, self._settings.read_func, self._settings.starting_address, self._settings.quantity)
             print(datas)
-            self.raw_mb_datas = list(datas)
+            self._raw_mb_datas = list(datas)
             self._update_table_value()
-            self.ui.status_print("Successful reading")
+            self._ui.log_print("Successful reading")
         except ModbusError as ex:
             error = ex.get_exception_code()
             if error == 1:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal Function")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal Function")
             if error == 2:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal data address")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal data address")
             if error == 3:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal data value")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal data value")
             if error == 4:
-                self.ui.status_print("MB exception " + str(error) + ": Slave device failure")
+                self._ui.log_print("MB exception " + str(error) + ": Slave device failure")
         except OSError as ex:
-            self.ui.status_print(str(ex))
+            self._ui.log_print(str(ex))
 
-    def _write_execute(self):
+    def _mb_writing_execute(self):
+        """Execute modbus writing function"""
 
         # Checking client
-        if self.MB_client is None:
-            self.ui.status_print("Client not connected")
+        if self.mb_client is None:
+            self._ui.log_print("Client not connected")
             return
         # Checking available function
-        if self.settings.write_func is None:
+        if self._settings.write_func is None:
             return
         # Checking data
-        for i in self.raw_mb_datas:
+        for i in self._raw_mb_datas:
             if i is None:
-                self.ui.status_print("Value none in data")
+                self._ui.log_print("Value none in data")
                 return
 
         try:
             # write data in one shot
-            if self.settings.write_func == cst.WRITE_MULTIPLE_COILS or self.settings.write_func == cst.WRITE_MULTIPLE_REGISTERS:
-                self.ui.status_print("Writing...")
+            if self._settings.write_func == cst.WRITE_MULTIPLE_COILS or \
+                    self._settings.write_func == cst.WRITE_MULTIPLE_REGISTERS:
+                self._ui.log_print("Writing...")
                 self.repaint()
-                feedback = self.MB_client.execute(
+                feedback = self.mb_client.execute(
                     1,
-                    self.settings.write_func,
-                    self.settings.starting_address,
-                    output_value=self.raw_mb_datas
+                    self._settings.write_func,
+                    self._settings.starting_address,
+                    output_value=self._raw_mb_datas
                 )
-                self.ui.status_print("Successful writing")
+                self._ui.log_print("Successful writing")
+
             # write data one by one
-            elif self.settings.write_func == cst.WRITE_SINGLE_COIL or self.settings.write_func == cst.WRITE_SINGLE_REGISTER:
-                for i in range(len(self.raw_mb_datas)):
+            elif self._settings.write_func == cst.WRITE_SINGLE_COIL or \
+                    self._settings.write_func == cst.WRITE_SINGLE_REGISTER:
+                for i in range(len(self._raw_mb_datas)):
                     print("The i: " + str(i))
-                    self.ui.status_print("Writing at address" + str(self.settings.starting_address + i))
+                    self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
                     self.repaint()
-                    feedback = self.MB_client.execute(
+                    feedback = self.mb_client.execute(
                         1,
-                        self.settings.write_func,
-                        (self.settings.starting_address + i),
-                        output_value=self.raw_mb_datas[i]
+                        self._settings.write_func,
+                        (self._settings.starting_address + i),
+                        output_value=self._raw_mb_datas[i]
                     )
-                    self.ui.status_print("Successful writing")
+                    self._ui.log_print("Successful writing")
 
         except ModbusError as ex:
             error = ex.get_exception_code()
             if error == 1:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal Function")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal Function")
             if error == 2:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal data address")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal data address")
             if error == 3:
-                self.ui.status_print("MB exception " + str(error) + ": Illegal data value")
+                self._ui.log_print("MB exception " + str(error) + ": Illegal data value")
             if error == 4:
-                self.ui.status_print("MB exception " + str(error) + ": Slave device failure")
+                self._ui.log_print("MB exception " + str(error) + ": Slave device failure")
         except OSError as ex:
-            self.ui.status_print(str(ex))
+            self._ui.log_print(str(ex))
 
     def _setup_ui(self):
-        ui = UI_modbusComTask.UiModbusComTask()
-        ui.init_ui(self)
-        ui.read_button.clicked.connect(self._read_execute)
-        ui.write_button.clicked.connect(self._write_execute)
+        """Load widgets and connect them to function."""
+        ui = UI_modbusComTask.UiModbusComTask(self)
+        ui.read_button.clicked.connect(self._mb_reading_execute)
+        ui.write_button.clicked.connect(self._mb_writing_execute)
         ui.open_settings_btn.clicked.connect(self._open_settings)
         ui.table_widget.itemChanged.connect(self._on_table_item_changed)
         return ui

@@ -1,5 +1,6 @@
 # pycharm directory
 venv/
+.idea/
 # pyinstaller directory
 build/
 dist/

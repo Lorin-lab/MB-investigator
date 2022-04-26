@@ -1,12 +1,12 @@
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import UI_settingsCom
 
 
 class SettingsCom(QMainWindow):
+    """This class contains the communication parameters and is the menu for editing them."""
     def __init__(self, parent, call_back_func):
         super(SettingsCom, self).__init__(parent)
-        self.call_back_func = call_back_func
+        self._call_back_func = call_back_func
 
         # Settings
         self.ip = "192.168.0.123"
@@ -14,22 +14,24 @@ class SettingsCom(QMainWindow):
         self.timeout = 5.0
 
         # UI setup
-        self.ui = self._setup_ui()
+        self._ui = self._setup_ui()
 
     def _validation(self):
-        self.ip = self.ui.IP_edit.text()
-        self.port = int(self.ui.port_edit.text())
+        """save the settings close the menu and call the 'call back' function"""
+        self.ip = self._ui.IP_edit.text()
+        self.port = int(self._ui.port_edit.text())
         self.close()
-        self.call_back_func()
+        self._call_back_func()
 
     def _cancel(self):
-        self.ui.port_edit.setText(str(self.port))
-        self.ui.IP_edit.setText(self.ip)
+        """Reset widget with actual settings and close the menu"""
+        self._ui.port_edit.setText(str(self.port))
+        self._ui.IP_edit.setText(self.ip)
         self.close()
 
     def _setup_ui(self):
-        ui = UI_settingsCom.UiSettingsCom()
-        ui.init_ui(self)
+        """Load widgets and connect them to function."""
+        ui = UI_settingsCom.UiSettingsCom(self)
 
         ui.port_edit.setText(str(self.port))
         ui.IP_edit.setText(self.ip)

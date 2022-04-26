@@ -1,12 +1,11 @@
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
-import UI_modbusComTask
-import UI_settingsTask
 import modbus_tk.defines as cst
+
+import UI_settingsTask
 
 
 class SettingsTask(QMainWindow):
+    """This class contains the modbus parameters of a task and is the menu for editing them."""
     def __init__(self, parent, call_back_func):
         super(SettingsTask, self).__init__(parent)
         self.call_back_func = call_back_func
@@ -18,96 +17,77 @@ class SettingsTask(QMainWindow):
         self.read_func = cst.READ_COILS
         self.write_func = cst.WRITE_SINGLE_COIL
 
-        # Combo lists
-        self.read_func_list = (
-            "(FC01) Coils",
-            "(FC02) Discrete input",
-            "(FC03) Holding Registers",
-            "(FC04) Input Registers",
-        )
-        self.coil_write_func_list = (
-            "(FC05) Single Coil",
-            "(FC15) Multiple Coils"
-        )
-        self.register_write_func_list = (
-            "(FC06) Single Register",
-            "(FC16) Multiple Registers"
-        )
+        # Combo options
+        self._coil_write_funcs = [
+            self.ComboBoxOption(cst.WRITE_SINGLE_COIL, "(FC05) Single Coil"),
+            self.ComboBoxOption(cst.WRITE_MULTIPLE_COILS, "(FC15) Multiple Coils")
+        ]
+        self._register_write_funcs = [
+            self.ComboBoxOption(cst.WRITE_SINGLE_REGISTER, "(FC06) Single Register"),
+            self.ComboBoxOption(cst.WRITE_MULTIPLE_REGISTERS, "(FC16) Multiple Register")
+        ]
+        self._read_funcs = [
+            self.ComboBoxOption(cst.READ_COILS, "(FC01) Coils", self._coil_write_funcs),
+            self.ComboBoxOption(cst.READ_DISCRETE_INPUTS, "(FC02) Discrete input"),
+            self.ComboBoxOption(cst.READ_HOLDING_REGISTERS, "(FC03) Holding Registers", self._register_write_funcs),
+            self.ComboBoxOption(cst.READ_INPUT_REGISTERS, "(FC04) Input Registers")
+        ]
 
         # UI setup
-        self.ui = self._setup_ui()
+        self._ui = self._setup_ui()
         self._on_read_func_change(0)
 
     def _validation(self):
-        self.task_name = self.ui.task_name_edit.text()
-        self.starting_address = int(self.ui.start_address_edit.text())
-        self.quantity = int(self.ui.quantity_edit.text())
+        """save the settings close the menu and call the 'call back' function"""
+        self.task_name = self._ui.task_name_edit.text()
+        self.starting_address = int(self._ui.start_address_edit.text())
+        self.quantity = int(self._ui.quantity_edit.text())
 
-        index_r = self.ui.read_func_list.currentIndex()
-        index_w = self.ui.write_func_list.currentIndex()
-        # Coil
-        if index_r == 0:
-            self.read_func = cst.READ_COILS
-            if index_w == 0:
-                self.write_func = cst.WRITE_SINGLE_COIL
-            else:
-                self.write_func = cst.WRITE_MULTIPLE_COILS
-        # Discrete input
-        elif index_r == 1:
-            self.read_func = cst.READ_DISCRETE_INPUTS
+        # Saving modbus function
+        index_r = self._ui.read_func_list.currentIndex()
+        index_w = self._ui.write_func_list.currentIndex()
+        read_func_option = self._read_funcs[index_r]
+        self.read_func = read_func_option.value
+        if read_func_option.associated_options is None:
             self.write_func = None
-        # holding register
-        elif index_r == 2:
-            self.read_func = cst.READ_HOLDING_REGISTERS
-            if index_w == 0:
-                self.write_func = cst.WRITE_SINGLE_REGISTER
-            else:
-                self.write_func = cst.WRITE_MULTIPLE_REGISTERS
-        # Input register
-        elif index_r == 3:
-            self.read_func = cst.READ_INPUT_REGISTERS
-            self.write_func = None
+        else:
+            self.write_func = read_func_option.associated_options[index_w].value
 
         self.close()
         self.call_back_func()
 
     def _cancel(self):
-        self.ui.task_name_edit.setText(self.task_name)
-        self.ui.start_address_edit.setText(str(self.starting_address))
-        self.ui.quantity_edit.setText(str(self.quantity))
+        """Reset widget with actual settings and close the menu"""
+        self._ui.task_name_edit.setText(self.task_name)
+        self._ui.start_address_edit.setText(str(self.starting_address))
+        self._ui.quantity_edit.setText(str(self.quantity))
 
-        current_index = None
-        if self.read_func == cst.READ_COILS:
-            current_index = 0
-        if self.read_func == cst.READ_DISCRETE_INPUTS:
-            current_index = 1
-        if self.read_func == cst.READ_HOLDING_REGISTERS:
-            current_index = 2
-        if self.read_func == cst.READ_INPUT_REGISTERS:
-            current_index = 4
-        self.ui.read_func_list.setCurrentIndex(current_index)
-        self._on_read_func_change(current_index)
+        # Reading modbus function combo box
+        for i in range(len(self._read_funcs)):
+            if self._read_funcs[i].value == self.read_func:
+                self._ui.read_func_list.setCurrentIndex(i)
+                self._on_read_func_change(i)
+                break
 
         self.close()
 
     def _on_read_func_change(self, current_index):
-        if current_index == 1 or current_index == 3:
-            self.ui.write_func_list.setEnabled(False)
-            self.ui.write_func_list.clear()
-        elif current_index == 0:
-            self.ui.write_func_list.setEnabled(True)
-            self.ui.write_func_list.clear()
-            self.ui.write_func_list.addItems(self.coil_write_func_list)
-        elif current_index == 2:
-            self.ui.write_func_list.setEnabled(True)
-            self.ui.write_func_list.clear()
-            self.ui.write_func_list.addItems(self.register_write_func_list)
+        """Updates the writing combo box according to the modbus reading function."""
+        self._ui.write_func_list.clear()
+        func_wrap = self._read_funcs[current_index]
+        if func_wrap.associated_options is None:
+            self._ui.write_func_list.setEnabled(False)
+        else:
+            self._ui.write_func_list.setEnabled(True)
+            for obj in func_wrap.associated_options:
+                self._ui.write_func_list.addItem(obj.text)
 
     def _setup_ui(self):
-        ui = UI_settingsTask.UiSettingsTask()
-        ui.init_ui(self)
+        """Load widgets and connect them to function."""
+        ui = UI_settingsTask.UiSettingsTask(self)
 
-        ui.read_func_list.addItems(self.read_func_list)
+        for obj in self._read_funcs:
+            ui.read_func_list.addItem(obj.text)
         ui.read_func_list.currentIndexChanged.connect(self._on_read_func_change)
 
         ui.task_name_edit.setText(self.task_name)
@@ -118,3 +98,10 @@ class SettingsTask(QMainWindow):
         ui.cancel_button.clicked.connect(self._cancel)
 
         return ui
+
+    class ComboBoxOption:
+        """Packaging to group a value with a string to display for the combo boxes."""
+        def __init__(self, value, text, associated_options=None):
+            self.value = value
+            self.text = text
+            self.associated_options = associated_options

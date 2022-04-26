@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import *
 
 
 class UiSettingsCom(object):
-    def init_ui(self, main_window):
+    """This class contains all the widgets and configures them for the communications configuration menu."""
+    def __init__(self, main_window):
         v_layout = QVBoxLayout()
         widget = QWidget()
         widget.setLayout(v_layout)

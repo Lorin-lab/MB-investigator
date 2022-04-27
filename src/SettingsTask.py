@@ -12,6 +12,7 @@ class SettingsTask(QMainWindow):
 
         # Settings
         self.task_name = "New task"
+        self.unit_id = 1
         self.starting_address = 0
         self.quantity = 10
         self.read_func = cst.READ_COILS
@@ -40,6 +41,7 @@ class SettingsTask(QMainWindow):
     def _validation(self):
         """save the settings close the menu and call the 'call back' function"""
         self.task_name = self._ui.task_name_edit.text()
+        self.unit_id = int(self._ui.unit_id_edit.text())
         self.starting_address = int(self._ui.start_address_edit.text())
         self.quantity = int(self._ui.quantity_edit.text())
 
@@ -59,6 +61,7 @@ class SettingsTask(QMainWindow):
     def _cancel(self):
         """Reset widget with actual settings and close the menu"""
         self._ui.task_name_edit.setText(self.task_name)
+        self._ui.unit_id_edit.setText(str(self.unit_id))
         self._ui.start_address_edit.setText(str(self.starting_address))
         self._ui.quantity_edit.setText(str(self.quantity))
 
@@ -86,11 +89,13 @@ class SettingsTask(QMainWindow):
         """Load widgets and connect them to function."""
         ui = UI_settingsTask.UiSettingsTask(self)
 
+        ui.task_name_edit.setText(self.task_name)
+        ui.unit_id_edit.setText(str(self.unit_id))
+
         for obj in self._read_funcs:
             ui.read_func_list.addItem(obj.text)
         ui.read_func_list.currentIndexChanged.connect(self._on_read_func_change)
 
-        ui.task_name_edit.setText(self.task_name)
         ui.start_address_edit.setText(str(self.starting_address))
         ui.quantity_edit.setText(str(self.quantity))
 

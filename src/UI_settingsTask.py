@@ -19,8 +19,15 @@ class UiSettingsTask(object):
         self.task_name_edit = QLineEdit()
         self.task_name_edit.setMaxLength(20)
 
+        # Starting address edit
+        self.unit_id_edit = QLineEdit()
+        self.unit_id_edit.setValidator(QIntValidator(0, 255))
+
         # Read function list
         self.read_func_list = QComboBox()
+
+        # write function list
+        self.write_func_list = QComboBox()
 
         # Starting address edit
         self.start_address_edit = QLineEdit()
@@ -30,15 +37,13 @@ class UiSettingsTask(object):
         self.quantity_edit = QLineEdit()
         self.quantity_edit.setValidator(QIntValidator(0, 2000))
 
-        # write function list
-        self.write_func_list = QComboBox()
-
         flo = QFormLayout()
         flo.addRow("Task name", self.task_name_edit)
+        flo.addRow("Unit ID", self.unit_id_edit)
         flo.addRow("Read function", self.read_func_list)
+        flo.addRow("Write function", self.write_func_list)
         flo.addRow("Start address", self.start_address_edit)
         flo.addRow("Quantity of register", self.quantity_edit)
-        flo.addRow("Write function", self.write_func_list)
         v_layout.addLayout(flo)
 
         # ****************************

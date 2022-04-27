@@ -101,7 +101,10 @@ class ModbusComTask(QDockWidget):
         try:
             # Reading data
             datas = self.mb_client.execute(
-                1, self._settings.read_func, self._settings.starting_address, self._settings.quantity)
+                self._settings.unit_id,
+                self._settings.read_func,
+                self._settings.starting_address,
+                self._settings.quantity)
             print(datas)
             self._raw_mb_datas = list(datas)
             self._update_table_value()
@@ -142,7 +145,7 @@ class ModbusComTask(QDockWidget):
                 self._ui.log_print("Writing...")
                 self.repaint()
                 feedback = self.mb_client.execute(
-                    1,
+                    self._settings.unit_id,
                     self._settings.write_func,
                     self._settings.starting_address,
                     output_value=self._raw_mb_datas
@@ -157,7 +160,7 @@ class ModbusComTask(QDockWidget):
                     self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
                     self.repaint()
                     feedback = self.mb_client.execute(
-                        1,
+                        self._settings.unit_id,
                         self._settings.write_func,
                         (self._settings.starting_address + i),
                         output_value=self._raw_mb_datas[i]

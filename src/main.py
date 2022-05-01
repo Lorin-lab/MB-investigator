@@ -4,10 +4,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from modbus_tk import modbus_tcp, hooks
 
-import SettingsCom
-import UI_main
+import ComSettings
+from ui import UI_main
 import about_win
-from ModbusComTask import ModbusComTask
+from ModbusTask import ModbusTask
 
 
 class MainWindow(QMainWindow):
@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Instantiates the communication parameters and their menu.
-        self._settings_com = SettingsCom.SettingsCom(self, self._on_settings_update)
+        self._settings_com = ComSettings.ComSettings(self, self._on_settings_update)
 
         self._mb_client = None  # Modbus client
         self._task_list = []
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
 
     def _add_com_task(self):
         """Adds modbus task."""
-        task = ModbusComTask(self, self._mb_client)
+        task = ModbusTask(self, self._mb_client)
         self._task_list.append(task)
 
         # Dock the task as tab

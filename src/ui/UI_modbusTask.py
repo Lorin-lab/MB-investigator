@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 from datetime import datetime
 
 
-class UiModbusComTask(object):
+class UiModbusTask(object):
     """This class contains all the widgets and configures them for the modbus task menu."""
     def __init__(self, main_window):
         v_layout = QVBoxLayout()

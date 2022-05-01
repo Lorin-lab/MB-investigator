@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import *
 import modbus_tk.defines as cst
 
-import UI_settingsTask
+from ui import UI_mbTaskSettings
 
 
-class SettingsTask(QMainWindow):
+class MbTaskSettings(QMainWindow):
     """This class contains the modbus parameters of a task and is the menu for editing them."""
     def __init__(self, parent, call_back_func):
-        super(SettingsTask, self).__init__(parent)
+        super(MbTaskSettings, self).__init__(parent)
         self.call_back_func = call_back_func
 
         # Settings
@@ -49,13 +49,12 @@ class SettingsTask(QMainWindow):
         self._ui.quantity_edit.setText(str(self.quantity))
 
         self._ui.read_func_cb.set_current_by_value(self.read_func)
-        self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex)
+        self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex())
 
         self.close()
 
     def _on_read_func_cb_change(self, current_index):
         """Setup options of the writing func combo box, according to the modbus reading function."""
-
         self._ui.write_func_cb.clear_options()
 
         read_func = self._ui.read_func_cb.get_option_value_by_index(current_index)
@@ -73,7 +72,7 @@ class SettingsTask(QMainWindow):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_settingsTask.UiSettingsTask(self)
+        ui = UI_mbTaskSettings.UiMbTaskSettings(self)
 
         ui.task_name_edit.setText(self.task_name)
         ui.unit_id_edit.setText(str(self.unit_id))

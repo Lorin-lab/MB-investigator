@@ -1,6 +1,5 @@
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import UI_about_win
+from ui import UI_about_win
 
 
 class AboutWin(QMainWindow):

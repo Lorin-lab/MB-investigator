@@ -1,10 +1,10 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from QCustomComboBox import QCustomComboBox
+from ui.QCustomComboBox import QCustomComboBox
 
 
-class UiSettingsTask(object):
+class UiMbTaskSettings(object):
     """This class contains all the widgets and configures them for the task configuration menu."""
     def __init__(self, main_window):
         main_window.setWindowTitle('Task settings')

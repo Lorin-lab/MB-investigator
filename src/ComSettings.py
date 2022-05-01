@@ -4,13 +4,13 @@ from enum import Enum
 import serial
 import serial.tools.list_ports
 
-import UI_settingsCom
+from ui import UI_comSettings
 
 
-class SettingsCom(QMainWindow):
+class ComSettings(QMainWindow):
     """This class contains the communication parameters and is the menu for editing them."""
     def __init__(self, parent, call_back_func):
-        super(SettingsCom, self).__init__(parent)
+        super(ComSettings, self).__init__(parent)
         self._call_back_func = call_back_func
 
         # General Settings
@@ -131,7 +131,7 @@ class SettingsCom(QMainWindow):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_settingsCom.UiSettingsCom(self)
+        ui = UI_comSettings.UiComSettings(self)
 
         # general settings
         ui.mode_button_group.idClicked.connect(self._on_mode_changed)

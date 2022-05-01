@@ -4,20 +4,20 @@ from PyQt5.QtWidgets import *
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
-import UI_modbusComTask
-import SettingsTask
+from ui import UI_modbusTask
+import MbTaskSettings
 
 
-class ModbusComTask(QDockWidget):
+class ModbusTask(QDockWidget):
     """Object for reading and writing to a modbus address range according to parameters.
     All presented with a graphic interface.
     """
     def __init__(self, parent, mb_client):
-        super(ModbusComTask, self).__init__("New task", parent)
+        super(ModbusTask, self).__init__("New task", parent)
         self.mb_client = mb_client
 
         # Instantiates the modbus parameters and their menu.
-        self._settings = SettingsTask.SettingsTask(self, self._on_settings_update)
+        self._settings = MbTaskSettings.MbTaskSettings(self, self._on_settings_update)
         self._raw_mb_datas = [None]
 
         self._ui = self._setup_ui()
@@ -182,7 +182,7 @@ class ModbusComTask(QDockWidget):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_modbusComTask.UiModbusComTask(self)
+        ui = UI_modbusTask.UiModbusTask(self)
         ui.read_button.clicked.connect(self._mb_reading_execute)
         ui.write_button.clicked.connect(self._mb_writing_execute)
         ui.open_settings_btn.clicked.connect(self._open_settings)

@@ -1,10 +1,10 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from QCustomComboBox import QCustomComboBox
+from ui.QCustomComboBox import QCustomComboBox
 
 
-class UiSettingsCom(object):
+class UiComSettings(object):
     """This class contains all the widgets and configures them for the communications configuration menu."""
     def __init__(self, main_window):
         general_layout = QVBoxLayout()

@@ -18,25 +18,15 @@ class SettingsTask(QMainWindow):
         self.read_func = cst.READ_COILS
         self.write_func = cst.WRITE_SINGLE_COIL
 
-        # Combo options
-        self._coil_write_funcs = [
-            self.ComboBoxOption(cst.WRITE_SINGLE_COIL, "(FC05) Single Coil"),
-            self.ComboBoxOption(cst.WRITE_MULTIPLE_COILS, "(FC15) Multiple Coils")
-        ]
-        self._register_write_funcs = [
-            self.ComboBoxOption(cst.WRITE_SINGLE_REGISTER, "(FC06) Single Register"),
-            self.ComboBoxOption(cst.WRITE_MULTIPLE_REGISTERS, "(FC16) Multiple Register")
-        ]
-        self._read_funcs = [
-            self.ComboBoxOption(cst.READ_COILS, "(FC01) Coils", self._coil_write_funcs),
-            self.ComboBoxOption(cst.READ_DISCRETE_INPUTS, "(FC02) Discrete input"),
-            self.ComboBoxOption(cst.READ_HOLDING_REGISTERS, "(FC03) Holding Registers", self._register_write_funcs),
-            self.ComboBoxOption(cst.READ_INPUT_REGISTERS, "(FC04) Input Registers")
-        ]
-
         # UI setup
         self._ui = self._setup_ui()
-        self._on_read_func_change(0)
+
+        # setup read func combo box
+        self._ui.read_func_cb.add_option(cst.READ_COILS, "(FC01) Coils", set_as_current=True)
+        self._ui.read_func_cb.add_option(cst.READ_DISCRETE_INPUTS, "(FC02) Discrete input")
+        self._ui.read_func_cb.add_option(cst.READ_HOLDING_REGISTERS, "(FC03) Holding Registers")
+        self._ui.read_func_cb.add_option(cst.READ_INPUT_REGISTERS, "(FC04) Input Registers")
+        self._on_read_func_cb_change(0)
 
     def _validation(self):
         """save the settings close the menu and call the 'call back' function"""
@@ -45,15 +35,8 @@ class SettingsTask(QMainWindow):
         self.starting_address = int(self._ui.start_address_edit.text())
         self.quantity = int(self._ui.quantity_edit.text())
 
-        # Saving modbus function
-        index_r = self._ui.read_func_list.currentIndex()
-        index_w = self._ui.write_func_list.currentIndex()
-        read_func_option = self._read_funcs[index_r]
-        self.read_func = read_func_option.value
-        if read_func_option.associated_options is None:
-            self.write_func = None
-        else:
-            self.write_func = read_func_option.associated_options[index_w].value
+        self.read_func = self._ui.read_func_cb.get_current_option_value()
+        self.write_func = self._ui.write_func_cb.get_current_option_value()
 
         self.close()
         self.call_back_func()
@@ -65,25 +48,28 @@ class SettingsTask(QMainWindow):
         self._ui.start_address_edit.setText(str(self.starting_address))
         self._ui.quantity_edit.setText(str(self.quantity))
 
-        # Reading modbus function combo box
-        for i in range(len(self._read_funcs)):
-            if self._read_funcs[i].value == self.read_func:
-                self._ui.read_func_list.setCurrentIndex(i)
-                self._on_read_func_change(i)
-                break
+        self._ui.read_func_cb.set_current_by_value(self.read_func)
+        self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex)
 
         self.close()
 
-    def _on_read_func_change(self, current_index):
-        """Updates the writing combo box according to the modbus reading function."""
-        self._ui.write_func_list.clear()
-        func_wrap = self._read_funcs[current_index]
-        if func_wrap.associated_options is None:
-            self._ui.write_func_list.setEnabled(False)
+    def _on_read_func_cb_change(self, current_index):
+        """Setup options of the writing func combo box, according to the modbus reading function."""
+
+        self._ui.write_func_cb.clear_options()
+
+        read_func = self._ui.read_func_cb.get_option_value_by_index(current_index)
+        if read_func == cst.READ_COILS:
+            self._ui.write_func_cb.setEnabled(True)
+            self._ui.write_func_cb.add_option(cst.WRITE_SINGLE_COIL, "(FC05) Single Coil")
+            self._ui.write_func_cb.add_option(cst.WRITE_MULTIPLE_COILS, "(FC15) Multiple Coils")
+        elif read_func == cst.READ_HOLDING_REGISTERS:
+            self._ui.write_func_cb.setEnabled(True)
+            self._ui.write_func_cb.add_option(cst.WRITE_SINGLE_REGISTER, "(FC06) Single Register")
+            self._ui.write_func_cb.add_option(cst.WRITE_MULTIPLE_REGISTERS, "(FC16) Multiple Register")
         else:
-            self._ui.write_func_list.setEnabled(True)
-            for obj in func_wrap.associated_options:
-                self._ui.write_func_list.addItem(obj.text)
+            self._ui.write_func_cb.setEnabled(False)
+            self._ui.write_func_cb.add_option(None, "Not available")
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
@@ -92,9 +78,7 @@ class SettingsTask(QMainWindow):
         ui.task_name_edit.setText(self.task_name)
         ui.unit_id_edit.setText(str(self.unit_id))
 
-        for obj in self._read_funcs:
-            ui.read_func_list.addItem(obj.text)
-        ui.read_func_list.currentIndexChanged.connect(self._on_read_func_change)
+        ui.read_func_cb.currentIndexChanged.connect(self._on_read_func_cb_change)
 
         ui.start_address_edit.setText(str(self.starting_address))
         ui.quantity_edit.setText(str(self.quantity))

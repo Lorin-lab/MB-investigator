@@ -119,6 +119,8 @@ class ModbusTask(QDockWidget):
                 self._ui.log_print("MB exception " + str(error) + ": Illegal data value")
             if error == 4:
                 self._ui.log_print("MB exception " + str(error) + ": Slave device failure")
+        except ModbusInvalidResponseError as ex:
+            self._ui.log_print("Modbus invalid response exception: " + str(ex))
         except OSError as ex:
             self._ui.log_print(str(ex))
 

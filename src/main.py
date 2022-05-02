@@ -2,9 +2,10 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from modbus_tk import modbus_tcp, hooks
+from modbus_tk import modbus_tcp, modbus_rtu, hooks
+import serial
 
-import ComSettings
+from ComSettings import ComSettings
 from ui import UI_main
 import about_win
 from ModbusTask import ModbusTask
@@ -17,7 +18,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Instantiates the communication parameters and their menu.
-        self._settings_com = ComSettings.ComSettings(self, self._on_settings_update)
+        self._settings_com = ComSettings(self, self._on_settings_update)
 
         self._mb_client = None  # Modbus client
         self._task_list = []
@@ -35,45 +36,79 @@ class MainWindow(QMainWindow):
         self._update_task_client_objet()
 
     def _try_connect_client(self):
-        """Try to connect the app to a modbus server"""
-        self._ui.status_bar.showMessage("Try connecting to " + self._settings_com.ip + " ...")
-        self.repaint()
-        print("Try connecting to " + self._settings_com.ip + " ...")
+        """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
+        print(self._settings_com.mode)
 
-        # setup client
-        self._mb_client = modbus_tcp.TcpMaster(self._settings_com.ip, self._settings_com.port, self._settings_com.timeout)
-        hooks.install_hook("modbus_tcp.TcpMaster.after_connect", self._on_client_connected)
-        hooks.install_hook("modbus_tcp.TcpMaster.after_close", self._on_client_disconnected)
-        self._update_task_client_objet()
+        # TCP MODE
+        if self._settings_com.mode == ComSettings.MbMode.TCP:
+            print("Try connecting to " + self._settings_com.ip + " ...")
+            self._ui.status_bar.showMessage("Try connecting to " + self._settings_com.ip + " ...")
+            self.repaint()
 
-        # try connection
+            # setup client
+            self._mb_client = modbus_tcp.TcpMaster(
+                self._settings_com.ip,
+                self._settings_com.port,
+                self._settings_com.timeout
+            )
+
+        # RTU MODE
+        if self._settings_com.mode == ComSettings.MbMode.RTU:
+            # Check serial port
+            if self._settings_com.serial_port_name is None:
+                self._ui.status_bar.showMessage("No serial port selected")
+                return
+
+            # Print message
+            print("Try opening " + str(self._settings_com.serial_port_name) + " ...")
+            self._ui.status_bar.showMessage("Try opening " + str(self._settings_com.serial_port_name) + " ...")
+            self.repaint()
+
+            # setup client
+            serial_port = serial.Serial(
+                port=None,  # Set null to avoid automatic opening
+                baudrate=self._settings_com.baud_rate,
+                bytesize=self._settings_com.data_bits,
+                parity=self._settings_com.parity,
+                stopbits=self._settings_com.stop_bits,
+                xonxoff=(self._settings_com.flow_control == ComSettings.FlowControl.XON_XOFF),
+                rtscts=(self._settings_com.flow_control == ComSettings.FlowControl.RTS_CTS),
+                dsrdtr=(self._settings_com.flow_control == ComSettings.FlowControl.DSR_DTR)
+            )
+            serial_port.port = self._settings_com.serial_port_name
+            self._mb_client = modbus_rtu.RtuMaster(serial_port)
+
+        # Try connection
         try:
+            # Try connection
             self._mb_client.open()
+
+            # Successful connection
+            self._ui.status_bar.showMessage("Connected.")
+            print("Connected")
+            self._update_task_client_objet()
         except ConnectionRefusedError:
-            self._ui.status_bar.showMessage("Connection Refused")
+            self._ui.status_bar.showMessage("Connection Refused.")
+            self._mb_client = None
+        except serial.SerialException as ex:
+            self._ui.status_bar.showMessage(str(ex))
             self._mb_client = None
         except OSError as ex:
             print(ex)
             self._ui.status_bar.showMessage(str(ex))
             self._mb_client = None
-        # Finally if the connection succeeds then _on_client_connected is called.
 
     def _try_disconnect_client(self):
         """Disconnect the modbus client"""
-        if self._mb_client is not None:
-            self._mb_client.close()
+        if self._mb_client is None:
+            self._ui.status_bar.showMessage("Already disconnected.")
+            return
 
-    def _on_client_connected(self, master):
-        """Is called when the application is connected to a modbus server."""
-        print("connected")
-        self._ui.status_bar.showMessage("Connected")
-
-    def _on_client_disconnected(self, master):
-        """Is called when the application is disconnected from a modbus server."""
-        print("disconnected")
-        self._ui.status_bar.showMessage("Disconnected")
+        self._ui.status_bar.showMessage("Disconnection...")
+        self._mb_client.close()
         self._mb_client = None
         self._update_task_client_objet()
+        self._ui.status_bar.showMessage("Disconnected.")
 
     def _add_com_task(self):
         """Adds modbus task."""

@@ -81,7 +81,6 @@ class UiComSettings(object):
         other_group_box.setLayout(other_group_layout)
 
         self.timeout = QLineEdit()
-        self.timeout.setValidator(QDoubleValidator(0.0, 60.0, 1))
 
         flo = QFormLayout()
         flo.addRow("Timeout (sec)", self.timeout)

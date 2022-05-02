@@ -3,6 +3,7 @@ from PyQt5.QtGui import *
 from enum import Enum
 import serial
 import serial.tools.list_ports
+import re
 
 from ui import UI_comSettings
 
@@ -129,6 +130,20 @@ class ComSettings(QMainWindow):
         self._ui.tcp_group_box.setDisabled(not is_tcp)
         self._ui.rtu_group_box.setDisabled(is_tcp)
 
+    def _format_timeout_line_edit(self):
+        """Formats the text provided by the user so that it can be parse with float() methode."""
+        text = self._ui.timeout.text()
+        # Remove characters that are not numbers, a dot, or a comma.
+        text = re.sub("[^0-9.,]", "", text)
+
+        if text.count(",") >= 1 and text.count(".") >= 1:
+            # Remove commas
+            text = re.sub(",", "", text)
+        else:
+            # Change comma into dot
+            text = re.sub(",", ".", text)
+        self._ui.timeout.setText(text)
+
     def _setup_ui(self):
         """Load widgets and connect them to function."""
         ui = UI_comSettings.UiComSettings(self)
@@ -136,6 +151,7 @@ class ComSettings(QMainWindow):
         # general settings
         ui.mode_button_group.idClicked.connect(self._on_mode_changed)
         ui.timeout.setText(str(self.timeout))
+        ui.timeout.editingFinished.connect(self._format_timeout_line_edit)
 
         # TCP settings
         ui.port_edit.setText(str(self.port))

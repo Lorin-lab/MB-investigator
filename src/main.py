@@ -54,7 +54,6 @@ class MainWindow(QMainWindow):
 
     def _try_connect_client(self):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
-        print(self._settings_com.mode)
 
         # TCP MODE
         if self._settings_com.mode == ComSettings.MbMode.TCP:
@@ -94,6 +93,7 @@ class MainWindow(QMainWindow):
             )
             serial_port.port = self._settings_com.serial_port_name
             self._mb_client = modbus_rtu.RtuMaster(serial_port)
+            self._mb_client.set_timeout(self._settings_com.timeout, True)
 
         # Try connection
         try:

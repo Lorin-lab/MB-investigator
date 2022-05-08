@@ -46,9 +46,6 @@ class ModbusTask(QDockWidget):
 
     def _on_settings_update(self):
         """Is called when the new modbus configuration is validated. Update widgets"""
-        print(self._settings.read_func)
-        print(self._settings.write_func)
-        print("!")
         # Update dock title
         self.setWindowTitle(self._settings.task_name)
 
@@ -121,7 +118,6 @@ class ModbusTask(QDockWidget):
                 self._settings.read_func,
                 self._settings.starting_address,
                 self._settings.quantity)
-            print(datas)
             self._raw_mb_datas = list(datas)
             self._update_table_value()
             self._ui.log_print("Successful reading")
@@ -174,7 +170,6 @@ class ModbusTask(QDockWidget):
             elif self._settings.write_func == cst.WRITE_SINGLE_COIL or \
                     self._settings.write_func == cst.WRITE_SINGLE_REGISTER:
                 for i in range(len(self._raw_mb_datas)):
-                    print("The i: " + str(i))
                     self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
                     self.repaint()
                     feedback = self.mb_client.execute(

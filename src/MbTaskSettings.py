@@ -102,10 +102,3 @@ class MbTaskSettings(QMainWindow):
         ui.cancel_button.clicked.connect(self._cancel)
 
         return ui
-
-    class ComboBoxOption:
-        """Packaging to group a value with a string to display for the combo boxes."""
-        def __init__(self, value, text, associated_options=None):
-            self.value = value
-            self.text = text
-            self.associated_options = associated_options

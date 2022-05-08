@@ -79,7 +79,6 @@ class ComSettings(QMainWindow):
 
     def showEvent(self, event: QShowEvent) -> None:
         """Called when the settings is open"""
-        print("show")
         self._refresh_serial_port()
 
     def _refresh_serial_port(self):

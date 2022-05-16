@@ -58,7 +58,12 @@ class MbTaskSettings(QMainWindow):
         self.call_back_func()
 
     def _cancel(self):
-        """Reset widget with actual settings and close the menu"""
+        """Reset widgets with actual settings and close the menu"""
+        self.update_widgets()
+        self.close()
+
+    def update_widgets(self):
+        """Set widgets with the current parameter value"""
         self._ui.task_name_edit.setText(self.task_name)
         self._ui.unit_id_edit.setText(str(self.unit_id))
         self._ui.start_address_edit.setText(str(self.starting_address))
@@ -66,8 +71,6 @@ class MbTaskSettings(QMainWindow):
 
         self._ui.read_func_cb.set_current_by_value(self.read_func)
         self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex())
-
-        self.close()
 
     def _on_read_func_cb_change(self, current_index):
         """Setup options of the writing func combo box, according to the modbus reading function."""

@@ -137,6 +137,8 @@ class MainWindow(QMainWindow):
         if len(self._task_list) > 1:
             self.tabifyDockWidget(self._task_list[0], task)
 
+        task.open_settings()
+
     def _update_task_client_objet(self):
         """Updates the modbus client object for each modbus task."""
         for task in self._task_list:

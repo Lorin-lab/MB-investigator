@@ -120,6 +120,11 @@ class ComSettings(QMainWindow):
 
     def _cancel(self):
         """Reset widget with actual settings and close the menu"""
+        self.update_widgets()
+        self.close()
+
+    def update_widgets(self):
+        """Set widgets with the current parameter value"""
         # General settings
         self._ui.timeout.setText(str(self.timeout))
         self._ui.button_mode_TCP.setChecked(self.mode == self.MbMode.TCP)
@@ -136,8 +141,6 @@ class ComSettings(QMainWindow):
         self._ui.parity_cb.set_current_by_value(self.parity)
         self._ui.stop_bits_cb.set_current_by_value(self.stop_bits)
         self._ui.flow_control_cb.set_current_by_value(self.flow_control)
-
-        self.close()
 
     def _on_mode_changed(self, id: int=0):
         """Is colled when communication mode is changed"""

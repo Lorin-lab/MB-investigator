@@ -14,10 +14,10 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from ui.QCustomComboBox import QCustomComboBox
+import ui.CustomQValidator as Validators
 
 
 class UiMbTaskSettings(object):
@@ -37,10 +37,9 @@ class UiMbTaskSettings(object):
         self.task_name_edit = QLineEdit()
         self.task_name_edit.setMaxLength(20)
 
-        # Starting address edit
+        # unit id
         self.unit_id_edit = QLineEdit()
-        self.unit_id_edit.setValidator(QIntValidator(0, 255))
-
+        self.unit_id_edit.setValidator(Validators.IntValidator(0, 255))
         # Read function list
         self.read_func_cb = QCustomComboBox()
 
@@ -49,11 +48,11 @@ class UiMbTaskSettings(object):
 
         # Starting address edit
         self.start_address_edit = QLineEdit()
-        self.start_address_edit.setValidator(QIntValidator(0, 65535))
+        self.start_address_edit.setValidator(Validators.IntValidator(0, 65535))
 
         # length edit
         self.quantity_edit = QLineEdit()
-        self.quantity_edit.setValidator(QIntValidator(0, 2000))
+        self.quantity_edit.setValidator(Validators.IntValidator(0, 2000))
 
         flo = QFormLayout()
         flo.addRow("Task name", self.task_name_edit)

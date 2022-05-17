@@ -18,6 +18,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from ui.QCustomComboBox import QCustomComboBox
+import ui.CustomQValidator as Validators
 
 
 class UiComSettings(object):
@@ -56,8 +57,7 @@ class UiComSettings(object):
 
         # Port Line edit
         self.port_edit = QLineEdit()
-        self.port_edit.setValidator(QIntValidator())
-        self.port_edit.setMaxLength(5)
+        self.port_edit.setValidator(Validators.IntValidator(0, 65535))
 
         flo = QFormLayout()
         flo.addRow("IP address", self.IP_edit)
@@ -97,6 +97,7 @@ class UiComSettings(object):
         other_group_box.setLayout(other_group_layout)
 
         self.timeout = QLineEdit()
+        self.timeout.setValidator(Validators.FloatValidator(0.0, 60.0))
 
         flo = QFormLayout()
         flo.addRow("Timeout (sec)", self.timeout)

@@ -34,7 +34,7 @@ class UiAboutWin(object):
         v_layout.addWidget(title)
 
         # Version
-        v_layout.addWidget(QLabel("Version: v1.0.0"))
+        v_layout.addWidget(QLabel("Version: v1.1.0"))
 
         # Licence
         v_layout.addWidget(QLabel("Licence: GNU General Public License Version 3"))

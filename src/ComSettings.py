@@ -155,7 +155,6 @@ class ComSettings(QMainWindow):
         # general settings
         ui.mode_button_group.idClicked.connect(self._on_mode_changed)
         ui.timeout.setText(str(self.timeout))
-        ui.timeout.editingFinished.connect(self._format_timeout_line_edit)
 
         # TCP settings
         ui.port_edit.setText(str(self.port))

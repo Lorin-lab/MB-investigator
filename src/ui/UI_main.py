@@ -34,10 +34,14 @@ class UiMain(object):
         main_window.setMenuBar(menu_bar)
 
         # file menu
+        self.action_import_config = QAction("Import config", main_window)
+        self.action_export_config = QAction("Export config", main_window)
         self.action_about = QAction("About", main_window)
         self.action_quit = QAction("Quit", main_window)
 
         file_menu = menu_bar.addMenu('File')
+        file_menu.addAction(self.action_import_config)
+        file_menu.addAction(self.action_export_config)
         file_menu.addAction(self.action_about)
         file_menu.addAction(self.action_quit)
 

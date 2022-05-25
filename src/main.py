@@ -144,6 +144,47 @@ class MainWindow(QMainWindow):
         for task in self._task_list:
             task.mb_client = self._mb_client
 
+    def _import_config(self):
+        print("import !")
+
+        file_dialog = QFileDialog()
+        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        file_dialog.setNameFilter("*.json")
+        if file_dialog.exec_():
+            file_path = file_dialog.selectedFiles()
+        else:
+            return  # Canceled
+
+        # Disconnection message box
+        if self._mb_client is not None:
+            msg_box = QMessageBox()
+            msg_box.setText("You will be disconnected from the server/slave.")
+            msg_box.setWindowTitle("Import")
+            msg_box.setIcon(QMessageBox.Information)
+            msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            clicked_button = msg_box.exec()
+
+            if clicked_button == QMessageBox.Cancel:
+                return  # Abort importing
+
+        print(file_path)
+
+    def _export_config(self):
+        print("export !")
+
+        # File Dialog
+        file_dialog = QFileDialog()
+        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        file_dialog.setNameFilter("*.json")
+        if file_dialog.exec_():
+            file_path = file_dialog.selectedFiles()
+        else:
+            return  # Canceled
+
+        print(file_path)
+
     def _setup_ui(self):
         """Load widgets and connect them to function."""
         ui = UI_main.UiMain(self)
@@ -155,6 +196,8 @@ class MainWindow(QMainWindow):
 
         about = about_win.AboutWin(self)
         ui.action_about.triggered.connect(about.show)
+        ui.action_import_config.triggered.connect(self._import_config)
+        ui.action_export_config.triggered.connect(self._export_config)
         ui.action_quit.triggered.connect(self.close)
         return ui
 

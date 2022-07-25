@@ -17,6 +17,7 @@ see <https://www.gnu.org/licenses/>.
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+import version
 
 
 class UiAboutWin(object):
@@ -34,7 +35,7 @@ class UiAboutWin(object):
         v_layout.addWidget(title)
 
         # Version
-        v_layout.addWidget(QLabel("Version: v1.1.0"))
+        v_layout.addWidget(QLabel("Version: " + version.__VERSION__))
 
         # Licence
         v_layout.addWidget(QLabel("Licence: GNU General Public License Version 3"))

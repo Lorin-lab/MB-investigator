@@ -28,6 +28,7 @@ from ComSettings import ComSettings
 from ui import UI_main
 import about_win
 from ModbusTask import ModbusTask
+import version
 
 
 class MainWindow(QMainWindow):
@@ -169,6 +170,7 @@ class MainWindow(QMainWindow):
 
         data = {
             "export_date": str(datetime.now()),
+            "app_version": version.__VERSION__,
             "com_settings": com_settings_data,
             "tasks": tasks_data_list
         }

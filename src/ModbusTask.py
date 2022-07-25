@@ -198,6 +198,22 @@ class ModbusTask(QDockWidget):
         except OSError as ex:
             self._ui.log_print(str(ex))
 
+    def export_config(self):
+        # get labels
+        labels = []
+        for i in range(self._ui.table_widget.rowCount()):
+            item = self._ui.table_widget.item(i, 1)
+            labels.append(item.text())
+
+        config = {
+            "settings": self._settings.export_config(),
+            "labels": labels
+        }
+        return config
+
+    def import_config(self, data):
+        pass
+
     def _setup_ui(self):
         """Load widgets and connect them to function."""
         ui = UI_modbusTask.UiModbusTask(self)

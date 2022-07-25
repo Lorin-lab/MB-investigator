@@ -19,7 +19,6 @@ from PyQt5.QtGui import *
 from enum import Enum
 import serial
 import serial.tools.list_ports
-import re
 
 from ui import UI_comSettings
 
@@ -35,7 +34,7 @@ class ComSettings(QMainWindow):
         self.timeout = 5.0
 
         # TCP Settings
-        self.ip = "192.168.0.123"
+        self.ip = "127.0.0.1"
         self.port = 502
 
         # RTU Settings
@@ -72,17 +71,17 @@ class ComSettings(QMainWindow):
         self._ui.stop_bits_cb.add_option(serial.STOPBITS_ONE_POINT_FIVE, "1.5"),
         self._ui.stop_bits_cb.add_option(serial.STOPBITS_TWO, "2")
 
-        self._ui.flow_control_cb.add_option(self.flow_control.NONE, "None", set_as_current=True),
-        self._ui.flow_control_cb.add_option(self.flow_control.XON_XOFF, "xON/xOFF (software)"),
-        self._ui.flow_control_cb.add_option(self.flow_control.RTS_CTS, "RTS/CTS (hardware)"),
-        self._ui.flow_control_cb.add_option(self.flow_control.DSR_DTR, "DSR/DTR (hardware)")
+        self._ui.flow_control_cb.add_option(self.FlowControl.NONE, "None", set_as_current=True),
+        self._ui.flow_control_cb.add_option(self.FlowControl.XON_XOFF, "xON/xOFF (software)"),
+        self._ui.flow_control_cb.add_option(self.FlowControl.RTS_CTS, "RTS/CTS (hardware)"),
+        self._ui.flow_control_cb.add_option(self.FlowControl.DSR_DTR, "DSR/DTR (hardware)")
 
     def showEvent(self, event: QShowEvent) -> None:
-        """Called when the settings is open"""
+        """Called when the settings menu is open"""
         self._refresh_serial_port()
 
     def _refresh_serial_port(self):
-        """List avaible serial port and refresh combo box"""
+        """List available serial port and refresh combo box"""
         serial_list = serial.tools.list_ports.comports()
         self._ui.serial_port_name_cb.clear_options()
 
@@ -142,11 +141,75 @@ class ComSettings(QMainWindow):
         self._ui.stop_bits_cb.set_current_by_value(self.stop_bits)
         self._ui.flow_control_cb.set_current_by_value(self.flow_control)
 
-    def _on_mode_changed(self, id: int=0):
-        """Is colled when communication mode is changed"""
+    def _on_mode_changed(self, id: int = 0):
+        """Is called when communication mode is changed"""
         is_tcp = self._ui.button_mode_TCP.isChecked()
         self._ui.tcp_group_box.setDisabled(not is_tcp)
         self._ui.rtu_group_box.setDisabled(is_tcp)
+
+    def export_config(self):
+        """Return settings values into Python obj"""
+        data = {
+            "mode": self.mode,
+            "timeout": self.timeout,
+
+            "ip": self.ip,
+            "port": self.port,
+
+            "serial_port_name": self.serial_port_name,
+            "baud_rate": self.baud_rate,
+            "data_bits": self.data_bits,
+            "parity": self.parity,
+            "stop_bits": self.stop_bits,
+            "flow_control": self.flow_control
+        }
+        return data
+
+    def import_config(self, data):
+        """Import settings values"""
+        check_set = [
+            ["mode", int],
+            ["timeout", float],
+
+            ["ip", str],
+            ["port", int],
+
+            ["serial_port_name", str],
+            ["baud_rate", int],
+            ["data_bits", int],
+            ["parity", str],
+            ["stop_bits", (int, float)],
+            ["flow_control", int],
+        ]
+        for x in check_set:
+            keyword = x[0]
+            expected_type = x[1]
+            found_type = type(data[keyword])
+            print(keyword)
+            print(expected_type)
+            print(found_type)
+
+
+            if found_type == expected_type:
+                pass
+            else:
+                raise TypeError("{} type is expected for {}. Found : {}".format(expected_type, keyword, found_type))
+
+        # Write data
+        self.mode = data["mode"]
+        self.timeout = data["timeout"]
+
+        self.ip = data["ip"]
+        self.port = data["port"]
+
+        self.serial_port_name = data["serial_port_name"]
+        self.baud_rate = data["baud_rate"]
+        self.data_bits = data["data_bits"]
+        self.parity = data["parity"]
+        self.stop_bits = data["stop_bits"]
+        self.flow_control = data["flow_control"]
+
+        self.update_widgets()
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
@@ -166,12 +229,12 @@ class ComSettings(QMainWindow):
 
         return ui
 
-    class MbMode(Enum):
+    class MbMode():
         """Enum of communication mode."""
         TCP = 0
         RTU = 1
 
-    class FlowControl(Enum):
+    class FlowControl():
         """Enum of flow control mode for serial com."""
         NONE = 0
         XON_XOFF = 1

@@ -21,6 +21,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from modbus_tk import modbus_tcp, modbus_rtu, hooks
 import serial
+import json
+from datetime import datetime
 
 from ComSettings import ComSettings
 from ui import UI_main
@@ -144,6 +146,39 @@ class MainWindow(QMainWindow):
         for task in self._task_list:
             task.mb_client = self._mb_client
 
+    def _export_config(self):
+        print("export !")
+
+        # File selection dialog
+        file_dialog = QFileDialog()
+        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        file_dialog.setNameFilter("*.json")
+        if file_dialog.exec_():
+            file_path = file_dialog.selectedFiles()[0]
+        else:  # Canceled
+            return
+
+        print(file_path)
+
+        # Prepare data
+        com_settings_data = self._settings_com.export_config()
+        tasks_data_list = []
+        for task in self._task_list:
+            tasks_data_list.append(task.export_config())
+
+        data = {
+            "export_date": str(datetime.now()),
+            "com_settings": com_settings_data,
+            "tasks": tasks_data_list
+        }
+        print(data)
+
+        # Write file
+        file_objet = open(file_path, "w")
+        json.dump(data, file_objet, indent=4)
+        file_objet.close()
+
     def _import_config(self):
         print("import !")
 
@@ -152,9 +187,9 @@ class MainWindow(QMainWindow):
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         file_dialog.setNameFilter("*.json")
         if file_dialog.exec_():
-            file_path = file_dialog.selectedFiles()
-        else:
-            return  # Canceled
+            file_path = file_dialog.selectedFiles()[0]
+        else:  # Canceled
+            return
 
         # Disconnection message box
         if self._mb_client is not None:
@@ -163,27 +198,17 @@ class MainWindow(QMainWindow):
             msg_box.setWindowTitle("Import")
             msg_box.setIcon(QMessageBox.Information)
             msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            clicked_button = msg_box.exec()
-
-            if clicked_button == QMessageBox.Cancel:
+            if msg_box.exec() == QMessageBox.Cancel:
                 return  # Abort importing
 
         print(file_path)
 
-    def _export_config(self):
-        print("export !")
+        file_objet = open(file_path, "r")
+        data = json.load(file_objet)
+        file_objet.close()
+        print(data)
 
-        # File Dialog
-        file_dialog = QFileDialog()
-        file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
-        file_dialog.setNameFilter("*.json")
-        if file_dialog.exec_():
-            file_path = file_dialog.selectedFiles()
-        else:
-            return  # Canceled
-
-        print(file_path)
+        self._settings_com.import_config(data["com_settings"])
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

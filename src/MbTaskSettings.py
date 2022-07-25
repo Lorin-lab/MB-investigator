@@ -89,6 +89,20 @@ class MbTaskSettings(QMainWindow):
             self._ui.write_func_cb.setEnabled(False)
             self._ui.write_func_cb.add_option(None, "Not available")
 
+    def export_config(self):
+        data = {
+            "task_name": self.task_name,
+            "unit_id": self.unit_id,
+            "starting_address": self.starting_address,
+            "quantity": self.quantity,
+            "read_func": self.read_func,
+            "write_func": self.write_func,
+        }
+        return data
+
+    def import_config(self, data):
+        pass
+
     def _setup_ui(self):
         """Load widgets and connect them to function."""
         ui = UI_mbTaskSettings.UiMbTaskSettings(self)

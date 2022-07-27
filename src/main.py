@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
             task.mb_client = self._mb_client
 
     def _export_config(self):
-        print("export !")
+        """Export configuration"""
 
         # File selection dialog
         file_dialog = QFileDialog()
@@ -159,8 +159,6 @@ class MainWindow(QMainWindow):
             file_path = file_dialog.selectedFiles()[0]
         else:  # Canceled
             return
-
-        print(file_path)
 
         # Prepare data
         com_settings_data = self._settings_com.export_config()
@@ -174,7 +172,6 @@ class MainWindow(QMainWindow):
             "com_settings": com_settings_data,
             "tasks": tasks_data_list
         }
-        print(data)
 
         # Write file
         file_objet = open(file_path, "w")
@@ -182,8 +179,9 @@ class MainWindow(QMainWindow):
         file_objet.close()
 
     def _import_config(self):
-        print("import !")
+        """Import configuration"""
 
+        # File selection dialog
         file_dialog = QFileDialog()
         file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
@@ -193,7 +191,7 @@ class MainWindow(QMainWindow):
         else:  # Canceled
             return
 
-        # Disconnection message box
+        # Disconnection warning message box
         if self._mb_client is not None:
             msg_box = QMessageBox()
             msg_box.setText("You will be disconnected from the server/slave.")
@@ -203,14 +201,49 @@ class MainWindow(QMainWindow):
             if msg_box.exec() == QMessageBox.Cancel:
                 return  # Abort importing
 
-        print(file_path)
+        try:
+            # get json
+            file_objet = open(file_path, "r")
+            data = json.load(file_objet)
+            file_objet.close()
+            print(data)
 
-        file_objet = open(file_path, "r")
-        data = json.load(file_objet)
-        file_objet.close()
-        print(data)
+            # import com settings
+            self._settings_com.import_config(data["com_settings"])
 
-        self._settings_com.import_config(data["com_settings"])
+            # remove old tasks
+            for task in self._task_list:
+                self.removeDockWidget(task)
+            self._task_list.clear()
+
+            # import task
+            for task_data in data["tasks"]:
+                # Create task
+                task = ModbusTask(self, self._mb_client)
+                self._task_list.append(task)
+                # import task data
+                task.import_config(task_data)
+                # Dock the task as tab
+                self.addDockWidget(Qt.RightDockWidgetArea, task)
+                if len(self._task_list) > 1:
+                    self.tabifyDockWidget(self._task_list[0], task)
+
+        except TypeError as e:
+            msg_box = QMessageBox()
+            msg_box.setText("Failure to import.\nCause: " + str(e))
+            msg_box.setWindowTitle("Import failure")
+            msg_box.setIcon(QMessageBox.Critical)
+            msg_box.setStandardButtons(QMessageBox.Ok)
+            msg_box.exec()
+            return  # Abort importing
+
+        # if the import is successful:
+        msg_box = QMessageBox()
+        msg_box.setText("Successful import")
+        msg_box.setWindowTitle("Successful import")
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec()
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

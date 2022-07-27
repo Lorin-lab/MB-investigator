@@ -199,6 +199,7 @@ class ModbusTask(QDockWidget):
             self._ui.log_print(str(ex))
 
     def export_config(self):
+        """Export configuration"""
         # get labels
         labels = []
         for i in range(self._ui.table_widget.rowCount()):
@@ -212,7 +213,20 @@ class ModbusTask(QDockWidget):
         return config
 
     def import_config(self, data):
-        pass
+        """Import configuration"""
+        # import modbus settings
+        self._settings.import_config(data["settings"])
+
+        # import label
+        labels = data["labels"]
+        for i in range(min(self._settings.quantity, len(labels))):
+            # column 1 : label
+            item = QTableWidgetItem(str(labels[i]))
+            if self._settings.write_func is None:
+                item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
+            self._ui.table_widget.setItem(i, 1, item)
+
+
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

@@ -56,6 +56,8 @@ class ComSettings(QMainWindow):
             self._ui.baud_rate_cb.add_option(i, str(i))
         self._ui.baud_rate_cb.set_current_by_value(9600)
 
+        self._ui.serial_port_name_cb.add_option(None, "None found")
+
         self._ui.data_bits_cb.add_option(serial.FIVEBITS, "5"),
         self._ui.data_bits_cb.add_option(serial.SIXBITS, "6"),
         self._ui.data_bits_cb.add_option(serial.SEVENBITS, "7"),
@@ -148,6 +150,7 @@ class ComSettings(QMainWindow):
         self._ui.rtu_group_box.setDisabled(is_tcp)
 
     def export_config(self):
+        """Export configuration"""
         """Return settings values into Python obj"""
         data = {
             "mode": self.mode,
@@ -166,50 +169,28 @@ class ComSettings(QMainWindow):
         return data
 
     def import_config(self, data):
-        """Import settings values"""
-        check_set = [
-            ["mode", int],
-            ["timeout", float],
+        """Import configuration"""
 
-            ["ip", str],
-            ["port", int],
+        # Write data into the widget. Because widget have value check.
+        # Général
+        self._ui.timeout.setText(str(data["timeout"]))
+        self._ui.button_mode_TCP.setChecked(data["mode"] == self.MbMode.TCP)
+        self._ui.button_mode_RTU.setChecked(data["mode"] == self.MbMode.RTU)
 
-            ["serial_port_name", str],
-            ["baud_rate", int],
-            ["data_bits", int],
-            ["parity", str],
-            ["stop_bits", (int, float)],
-            ["flow_control", int],
-        ]
-        for x in check_set:
-            keyword = x[0]
-            expected_type = x[1]
-            found_type = type(data[keyword])
-            print(keyword)
-            print(expected_type)
-            print(found_type)
+        # TCP settings
+        self._ui.port_edit.setText(str(data["port"]))
+        self._ui.IP_edit.setText(data["ip"])
 
+        # RTU settings
+        self._ui.serial_port_name_cb.set_current_by_value(data["serial_port_name"])
+        self._ui.baud_rate_cb.set_current_by_value(data["baud_rate"])
+        self._ui.data_bits_cb.set_current_by_value(data["data_bits"])
+        self._ui.parity_cb.set_current_by_value(data["parity"])
+        self._ui.stop_bits_cb.set_current_by_value(data["stop_bits"])
+        self._ui.flow_control_cb.set_current_by_value(data["flow_control"])
 
-            if found_type == expected_type:
-                pass
-            else:
-                raise TypeError("{} type is expected for {}. Found : {}".format(expected_type, keyword, found_type))
+        self._validation()  # then update var from widget
 
-        # Write data
-        self.mode = data["mode"]
-        self.timeout = data["timeout"]
-
-        self.ip = data["ip"]
-        self.port = data["port"]
-
-        self.serial_port_name = data["serial_port_name"]
-        self.baud_rate = data["baud_rate"]
-        self.data_bits = data["data_bits"]
-        self.parity = data["parity"]
-        self.stop_bits = data["stop_bits"]
-        self.flow_control = data["flow_control"]
-
-        self.update_widgets()
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

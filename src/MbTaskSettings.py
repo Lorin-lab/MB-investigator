@@ -90,6 +90,7 @@ class MbTaskSettings(QMainWindow):
             self._ui.write_func_cb.add_option(None, "Not available")
 
     def export_config(self):
+        """Export configuration"""
         data = {
             "task_name": self.task_name,
             "unit_id": self.unit_id,
@@ -101,7 +102,18 @@ class MbTaskSettings(QMainWindow):
         return data
 
     def import_config(self, data):
-        pass
+        """Import configuration"""
+        # Write data into the widget. Because widget have value check.
+        self._ui.task_name_edit.setText(str(data["task_name"]))
+        self._ui.unit_id_edit.setText(str(data["unit_id"]))
+        self._ui.start_address_edit.setText(str(data["starting_address"]))
+        self._ui.quantity_edit.setText(str(data["quantity"]))
+
+        self._ui.read_func_cb.set_current_by_value(data["read_func"])
+        self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex())
+        self._ui.write_func_cb.set_current_by_value(data["write_func"])
+
+        self._validation()
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

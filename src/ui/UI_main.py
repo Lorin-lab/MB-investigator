@@ -28,7 +28,7 @@ class UiMain(object):
         main_window.resize(400, 500)
 
         # ****************************
-        # menu bar
+        # menu action bar
         # ****************************
         menu_bar = QMenuBar(main_window)
         main_window.setMenuBar(menu_bar)
@@ -44,6 +44,22 @@ class UiMain(object):
         file_menu.addAction(self.action_export_config)
         file_menu.addAction(self.action_about)
         file_menu.addAction(self.action_quit)
+
+        # Communication settings
+        self.action_settings_com = QAction("Settings", main_window)
+        self.action_open_com = QAction("Open/Connect", main_window)
+        self.action_close_com = QAction("Close/Disconnect", main_window)
+
+        com_menu = menu_bar.addMenu('Communication')
+        com_menu.addAction(self.action_settings_com)
+        com_menu.addAction(self.action_open_com)
+        com_menu.addAction(self.action_close_com)
+
+        # Tasks
+        self.action_add_task = QAction("Add task", main_window)
+
+        task_menu = menu_bar.addMenu('Task')
+        task_menu.addAction(self.action_add_task)
 
         # ****************************
         # Status bar

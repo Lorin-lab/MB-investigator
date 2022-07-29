@@ -249,16 +249,22 @@ class MainWindow(QMainWindow):
         """Load widgets and connect them to function."""
         ui = UI_main.UiMain(self)
 
+        # toolbar
         ui.client_config_tool_btn.clicked.connect(self._open_settings_com)
         ui.connect_tool_btn.clicked.connect(self._try_connect_client)
         ui.disconnect_tool_btn.clicked.connect(self._try_disconnect_client)
         ui.Add_section_tool_btn.clicked.connect(self._add_com_task)
 
+        # action bar
         about = about_win.AboutWin(self)
         ui.action_about.triggered.connect(about.show)
         ui.action_import_config.triggered.connect(self._import_config)
         ui.action_export_config.triggered.connect(self._export_config)
         ui.action_quit.triggered.connect(self.close)
+        ui.action_settings_com.triggered.connect(self._open_settings_com)
+        ui.action_open_com.triggered.connect(self._try_connect_client)
+        ui.action_close_com.triggered.connect(self._try_disconnect_client)
+        ui.action_add_task.triggered.connect(self._add_com_task)
         return ui
 
 

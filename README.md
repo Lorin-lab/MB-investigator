@@ -9,6 +9,7 @@ You can read data (coils or registers) from your Modbus server/slave, and write 
 * Read coils and registers (FC01, FC02, FC03, FC04).
 * Write coils and registers (FC05, FC06, FC15, FC16).
 * Use multiple Modbus address ranges simultaneously.
+* Import and export configurations.
 
 # Download
 You can download the last build made with [PyInstaller](https://pyinstaller.org/en/stable/) here : 

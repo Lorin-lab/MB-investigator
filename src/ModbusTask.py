@@ -14,8 +14,6 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
@@ -36,7 +34,6 @@ class ModbusTask(QDockWidget):
 
         # Instantiates the modbus parameters and their menu.
         self._settings = MbTaskSettings.MbTaskSettings(self, self._on_settings_update)
-        self._raw_mb_datas = [None]
 
         ModbusTask.task_number += 1
         self._settings.task_name = "Task {0}".format(ModbusTask.task_number)
@@ -60,51 +57,10 @@ class ModbusTask(QDockWidget):
         else:
             self._ui.write_button.setEnabled(True)
 
-        # Reset raw data list
-        self._raw_mb_datas = [None]
-        for i in range(self._settings.quantity):
-            self._raw_mb_datas.append(None)
-
         # Reset table
-        self._ui.table_widget.setRowCount(self._settings.quantity)
-        for i in range(self._settings.quantity):
-            # column 0 : modbus address
-            item = QTableWidgetItem(str(self._settings.starting_address + i))
-            item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self._ui.table_widget.setItem(i, 0, item)
-            # column 1 : libelle
-            self._ui.table_widget.setItem(i, 1, QTableWidgetItem(""))
-
-        # update data in to table
-        self._update_table_value()
-
-    def _update_table_value(self):
-        """Update value column of the table"""
-        for i in range(self._settings.quantity):
-            # column 2 : value
-            item = QTableWidgetItem(str(self._raw_mb_datas[i]))
-            if self._settings.write_func is None:
-                item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self._ui.table_widget.setItem(i, 2, item)
-
-    def _on_table_item_changed(self, item: QTableWidgetItem):
-        """Is called when a data is change in the table."""
-        if item.column() == 2:  # Column value
-            """Checking value prompt by the user"""
-            try:
-                value = int(item.text())
-                if value < 0:
-                    value = 0
-                elif value > 1 and \
-                        (self._settings.write_func == cst.WRITE_MULTIPLE_COILS or
-                         self._settings.write_func == cst.WRITE_SINGLE_COIL):
-                    value = 1
-                elif value > 65535:
-                    value = 65535
-                self._raw_mb_datas[item.row()] = value
-            except ValueError:
-                # if int parse fail then undo change
-                item.setText(str(self._raw_mb_datas[item.row()]))
+        self._ui.table_widget.change_registers_set(self._settings.starting_address,
+                                                   self._settings.quantity,
+                                                   self._settings.write_func)
 
     def _mb_reading_execute(self):
         """Execute modbus reading function"""
@@ -123,8 +79,7 @@ class ModbusTask(QDockWidget):
                 self._settings.read_func,
                 self._settings.starting_address,
                 self._settings.quantity)
-            self._raw_mb_datas = list(datas)
-            self._update_table_value()
+            self._ui.table_widget.set_register_values(list(datas))
             self._ui.log_print("Successful reading")
         except ModbusError as ex:
             error = ex.get_exception_code()
@@ -152,12 +107,13 @@ class ModbusTask(QDockWidget):
         if self._settings.write_func is None:
             return
         # Checking data
-        for i in self._raw_mb_datas:
+        for i in self._ui.table_widget.get_register_values():
             if i is None:
                 self._ui.log_print("Value none in data")
                 return
 
         try:
+            data = self._ui.table_widget.get_register_values()
             # write data in one shot
             if self._settings.write_func == cst.WRITE_MULTIPLE_COILS or \
                     self._settings.write_func == cst.WRITE_MULTIPLE_REGISTERS:
@@ -167,21 +123,21 @@ class ModbusTask(QDockWidget):
                     self._settings.unit_id,
                     self._settings.write_func,
                     self._settings.starting_address,
-                    output_value=self._raw_mb_datas
+                    output_value=data
                 )
                 self._ui.log_print("Successful writing")
 
             # write data one by one
             elif self._settings.write_func == cst.WRITE_SINGLE_COIL or \
                     self._settings.write_func == cst.WRITE_SINGLE_REGISTER:
-                for i in range(len(self._raw_mb_datas)):
+                for i in range(len(data)):
                     self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
                     self.repaint()
                     feedback = self.mb_client.execute(
                         self._settings.unit_id,
                         self._settings.write_func,
                         (self._settings.starting_address + i),
-                        output_value=self._raw_mb_datas[i]
+                        output_value=data[i]
                     )
                     self._ui.log_print("Successful writing")
 
@@ -200,15 +156,9 @@ class ModbusTask(QDockWidget):
 
     def export_config(self):
         """Export configuration"""
-        # get labels
-        labels = []
-        for i in range(self._ui.table_widget.rowCount()):
-            item = self._ui.table_widget.item(i, 1)
-            labels.append(item.text())
-
         config = {
             "settings": self._settings.export_config(),
-            "labels": labels
+            "labels": self._ui.table_widget.export_config()
         }
         return config
 
@@ -218,15 +168,7 @@ class ModbusTask(QDockWidget):
         self._settings.import_config(data["settings"])
 
         # import label
-        labels = data["labels"]
-        for i in range(min(self._settings.quantity, len(labels))):
-            # column 1 : label
-            item = QTableWidgetItem(str(labels[i]))
-            if self._settings.write_func is None:
-                item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self._ui.table_widget.setItem(i, 1, item)
-
-
+        self._ui.table_widget.import_config(data["labels"])
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
@@ -234,5 +176,4 @@ class ModbusTask(QDockWidget):
         ui.read_button.clicked.connect(self._mb_reading_execute)
         ui.write_button.clicked.connect(self._mb_writing_execute)
         ui.open_settings_btn.clicked.connect(self.open_settings)
-        ui.table_widget.itemChanged.connect(self._on_table_item_changed)
         return ui

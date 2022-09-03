@@ -18,6 +18,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from datetime import datetime
+from ui.RegisterTableWidget import RegisterTableWidget
 
 
 class UiModbusTask(object):
@@ -58,21 +59,15 @@ class UiModbusTask(object):
         # ****************************
         self.plain_text_log = QPlainTextEdit()
         self.plain_text_log.setFixedHeight(40)
-        self.plain_text_log.setTextInteractionFlags(Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
+        self.plain_text_log.setTextInteractionFlags(
+            Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
         self.log_print("Ready")
         v_layout.addWidget(self.plain_text_log)
 
         # ****************************
         # table
         # ****************************
-        self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(3)
-        self.table_widget.setHorizontalHeaderLabels(["Address", "Label", "Value"])
-        self.table_widget.verticalHeader().hide()
-        self.table_widget.setStyleSheet("QTableWidget { "
-                                        "background-color : #CFCFCF;"
-                                        "border: 2px solid black;"
-                                        "}")
+        self.table_widget = RegisterTableWidget()
         v_layout.addWidget(self.table_widget)
 
     def log_print(self, text):

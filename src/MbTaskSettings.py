@@ -18,11 +18,21 @@ from PyQt5.QtWidgets import *
 import modbus_tk.defines as cst
 
 from ui import UI_mbTaskSettings
+import ui.custome_widgets.CustomQValidators as Validators
 
 
 class MbTaskSettings(QMainWindow):
-    """This class contains the modbus parameters of a task and is the menu for editing them."""
+    """
+    This class contains the modbus parameters of a task and is the menu for editing them.
+    """
+
     def __init__(self, parent, call_back_func):
+        """
+        Constructor of the class MbTaskSettings
+
+        :param parent: The parent window.
+        :param call_back_func: The function to call back when new settings are set.
+        """
         super(MbTaskSettings, self).__init__(parent)
         self.call_back_func = call_back_func
 
@@ -44,11 +54,13 @@ class MbTaskSettings(QMainWindow):
         self._ui.read_func_cb.add_option(cst.READ_INPUT_REGISTERS, "(FC04) Input Registers")
         self._on_read_func_cb_change(0)
 
+        self.update_widgets()
+
     def _validation(self):
         """save the settings close the menu and call the 'call back' function"""
         self.task_name = self._ui.task_name_edit.text()
         self.unit_id = int(self._ui.unit_id_edit.text())
-        self.starting_address = int(self._ui.start_address_edit.text())
+        self.starting_address = self._ui.start_address_edit.get_value()
         self.quantity = int(self._ui.quantity_edit.text())
 
         self.read_func = self._ui.read_func_cb.get_current_option_value()
@@ -66,7 +78,8 @@ class MbTaskSettings(QMainWindow):
         """Set widgets with the current parameter value"""
         self._ui.task_name_edit.setText(self.task_name)
         self._ui.unit_id_edit.setText(str(self.unit_id))
-        self._ui.start_address_edit.setText(str(self.starting_address))
+        self._ui.start_address_edit.set_value(self.starting_address)
+        self._ui.end_address_edit.set_value(0)
         self._ui.quantity_edit.setText(str(self.quantity))
 
         self._ui.read_func_cb.set_current_by_value(self.read_func)
@@ -88,6 +101,57 @@ class MbTaskSettings(QMainWindow):
         else:
             self._ui.write_func_cb.setEnabled(False)
             self._ui.write_func_cb.add_option(None, "Not available")
+
+    def _on_address_display_change(self):
+        """
+        Is called when the address display mode has been changed.
+        """
+        if self._ui.button_DEC.isChecked():
+            self._ui.start_address_edit.smart_change_validator(Validators.DecValidator(0, 65535))
+            self._ui.end_address_edit.smart_change_validator(Validators.DecValidator(0, 65535))
+        elif self._ui.button_HEX.isChecked():
+            self._ui.start_address_edit.smart_change_validator(Validators.HexValidator(0, 65535))
+            self._ui.end_address_edit.smart_change_validator(Validators.HexValidator(0, 65535))
+
+    def _on_start_address_edited(self):
+        """
+        Is called when the start address has been changed.
+        """
+        start_value = self._ui.start_address_edit.get_value()
+        end_value = self._ui.end_address_edit.get_value()
+        quantity = end_value - start_value + 1
+        if start_value >= end_value:
+            self._ui.end_address_edit.set_value(start_value)
+            quantity = 1
+        elif quantity > 2000:
+            self._ui.end_address_edit.set_value(start_value + 1999)
+        self._ui.quantity_edit.set_value(quantity)
+
+    def _on_end_address_edited(self):
+        """
+        Is called when the end address has been changed.
+        """
+        start_value = self._ui.start_address_edit.get_value()
+        end_value = self._ui.end_address_edit.get_value()
+        quantity = end_value - start_value + 1
+        if start_value >= end_value:
+            self._ui.start_address_edit.set_value(end_value)
+            quantity = 1
+        elif quantity > 2000:
+            self._ui.start_address_edit.set_value(end_value - 1999)
+        self._ui.quantity_edit.set_value(quantity)
+
+    def _on_quantity_edited(self):
+        """
+        Is called when the quantity of register has been changed.
+        """
+        start_value = self._ui.start_address_edit.get_value()
+        quantity = self._ui.quantity_edit.get_value()
+        end_value = start_value + quantity - 1
+        if end_value > 65535:
+            end_value = 65535
+            self._ui.quantity_edit.set_value(end_value - start_value + 1)
+        self._ui.end_address_edit.set_value(end_value)
 
     def export_config(self):
         """Export configuration"""
@@ -116,17 +180,16 @@ class MbTaskSettings(QMainWindow):
         self._validation()
 
     def _setup_ui(self):
-        """Load widgets and connect them to function."""
+        """
+        Load widgets and connect them to function.
+        """
         ui = UI_mbTaskSettings.UiMbTaskSettings(self)
 
-        ui.task_name_edit.setText(self.task_name)
-        ui.unit_id_edit.setText(str(self.unit_id))
-
         ui.read_func_cb.currentIndexChanged.connect(self._on_read_func_cb_change)
-
-        ui.start_address_edit.setText(str(self.starting_address))
-        ui.quantity_edit.setText(str(self.quantity))
-
+        ui.start_address_edit.editingFinished.connect(self._on_start_address_edited)
+        ui.end_address_edit.editingFinished.connect(self._on_end_address_edited)
+        ui.quantity_edit.editingFinished.connect(self._on_quantity_edited)
+        ui.button_group.idClicked.connect(self._on_address_display_change)
         ui.valid_button.clicked.connect(self._validation)
         ui.cancel_button.clicked.connect(self._cancel)
 

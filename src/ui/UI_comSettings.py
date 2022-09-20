@@ -14,11 +14,10 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from ui.QCustomComboBox import QCustomComboBox
-import ui.CustomQValidator as Validators
+from ui.custome_widgets.QCustomComboBox import QCustomComboBox
+import ui.custome_widgets.CustomQValidators as Validators
 
 
 class UiComSettings(object):
@@ -57,7 +56,7 @@ class UiComSettings(object):
 
         # Port Line edit
         self.port_edit = QLineEdit()
-        self.port_edit.setValidator(Validators.IntValidator(0, 65535))
+        self.port_edit.setValidator(Validators.DecValidator(0, 65535))
 
         flo = QFormLayout()
         flo.addRow("IP address", self.IP_edit)

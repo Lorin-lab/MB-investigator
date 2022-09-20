@@ -16,58 +16,98 @@ see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
 
-from ui.QCustomComboBox import QCustomComboBox
-import ui.CustomQValidator as Validators
+from ui.custome_widgets.QCustomComboBox import QCustomComboBox
+from ui.custome_widgets.IntegerLineEdit import QIntegerLineEdit
+import ui.custome_widgets.CustomQValidators as Validators
 
 
 class UiMbTaskSettings(object):
     """This class contains all the widgets and configures them for the task configuration menu."""
     def __init__(self, main_window):
         main_window.setWindowTitle('Task settings')
-        v_layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
         widget = QWidget()
-        widget.setLayout(v_layout)
+        widget.setLayout(main_layout)
         main_window.setCentralWidget(widget)
 
         # ****************************
-        # Settings
+        # other settings
         # ****************************
-
         # Task name edit
         self.task_name_edit = QLineEdit()
         self.task_name_edit.setMaxLength(20)
 
         # unit id
         self.unit_id_edit = QLineEdit()
-        self.unit_id_edit.setValidator(Validators.IntValidator(0, 255))
+        self.unit_id_edit.setValidator(Validators.DecValidator(0, 255))
+
+        form_layout = QFormLayout()
+        form_layout.addRow("Task name", self.task_name_edit)
+        form_layout.addRow("Unit ID", self.unit_id_edit)
+        main_layout.addLayout(form_layout)
+
+        # ****************************
+        # Registers address group
+        # ****************************
+        addr_group_box = QGroupBox("Register address")
+        main_layout.addWidget(addr_group_box)
+
+        # buttons
+        self.button_group = QButtonGroup()
+        buttons_layout = QHBoxLayout()
+
+        self.button_DEC = QRadioButton("DEC", main_window)
+        self.button_DEC.setChecked(True)
+        buttons_layout.addWidget(self.button_DEC)
+        self.button_group.addButton(self.button_DEC)
+
+        self.button_HEX = QRadioButton("HEX", main_window)
+        buttons_layout.addWidget(self.button_HEX)
+        self.button_group.addButton(self.button_HEX)
+
+        # Starting address edit
+        self.start_address_edit = QIntegerLineEdit()
+        self.start_address_edit.setValidator(Validators.DecValidator(0, 65535))
+
+        # Starting address edit
+        self.end_address_edit = QIntegerLineEdit()
+        self.end_address_edit.setValidator(Validators.DecValidator(0, 65535))
+
+        # Quantity edit
+        self.quantity_edit = QIntegerLineEdit()
+        self.quantity_edit.setValidator(Validators.DecValidator(0, 2000))
+
+        # form Layout
+        form_layout = QFormLayout()
+        form_layout.addRow("Address display", buttons_layout)
+        form_layout.addRow("Starting address", self.start_address_edit)
+        form_layout.addRow("End address", self.end_address_edit)
+        form_layout.addRow("Quantity of register", self.quantity_edit)
+        addr_group_box.setLayout(form_layout)
+
+        # ****************************
+        # Modbus function group
+        # ****************************
+        md_fn_group_box = QGroupBox("Modbus function")
+        main_layout.addWidget(md_fn_group_box)
+
         # Read function list
         self.read_func_cb = QCustomComboBox()
 
         # write function list
         self.write_func_cb = QCustomComboBox()
 
-        # Starting address edit
-        self.start_address_edit = QLineEdit()
-        self.start_address_edit.setValidator(Validators.IntValidator(0, 65535))
-
-        # length edit
-        self.quantity_edit = QLineEdit()
-        self.quantity_edit.setValidator(Validators.IntValidator(0, 2000))
-
-        flo = QFormLayout()
-        flo.addRow("Task name", self.task_name_edit)
-        flo.addRow("Unit ID", self.unit_id_edit)
-        flo.addRow("Read function", self.read_func_cb)
-        flo.addRow("Write function", self.write_func_cb)
-        flo.addRow("Start address", self.start_address_edit)
-        flo.addRow("Quantity of register", self.quantity_edit)
-        v_layout.addLayout(flo)
+        # form Layout
+        form_layout = QFormLayout()
+        form_layout.addRow("Read function", self.read_func_cb)
+        form_layout.addRow("Write function", self.write_func_cb)
+        md_fn_group_box.setLayout(form_layout)
 
         # ****************************
         # Main buttons
         # ****************************
         h_layout = QHBoxLayout()
-        v_layout.addLayout(h_layout)
+        main_layout.addLayout(h_layout)
 
         self.valid_button = QPushButton()
         self.valid_button.setText("Validation")

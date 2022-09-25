@@ -16,7 +16,6 @@ see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from enum import Enum
 import serial
 import serial.tools.list_ports
 
@@ -143,7 +142,7 @@ class ComSettings(QMainWindow):
         self._ui.stop_bits_cb.set_current_by_value(self.stop_bits)
         self._ui.flow_control_cb.set_current_by_value(self.flow_control)
 
-    def _on_mode_changed(self, id: int = 0):
+    def _on_mode_changed(self):
         """Is called when communication mode is changed"""
         is_tcp = self._ui.button_mode_TCP.isChecked()
         self._ui.tcp_group_box.setDisabled(not is_tcp)
@@ -172,10 +171,11 @@ class ComSettings(QMainWindow):
         """Import configuration"""
 
         # Write data into the widget. Because widget have value check.
-        # Général
+        # General
         self._ui.timeout.setText(str(data["timeout"]))
         self._ui.button_mode_TCP.setChecked(data["mode"] == self.MbMode.TCP)
         self._ui.button_mode_RTU.setChecked(data["mode"] == self.MbMode.RTU)
+        self._on_mode_changed()
 
         # TCP settings
         self._ui.port_edit.setText(str(data["port"]))
@@ -190,7 +190,6 @@ class ComSettings(QMainWindow):
         self._ui.flow_control_cb.set_current_by_value(data["flow_control"])
 
         self._validation()  # then update var from widget
-
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
@@ -210,12 +209,12 @@ class ComSettings(QMainWindow):
 
         return ui
 
-    class MbMode():
+    class MbMode:
         """Enum of communication mode."""
         TCP = 0
         RTU = 1
 
-    class FlowControl():
+    class FlowControl:
         """Enum of flow control mode for serial com."""
         NONE = 0
         XON_XOFF = 1

@@ -96,16 +96,27 @@ class RegisterTableWidget(QTableWidget):
                 # if int parse fail then undo change
                 item.setText(str(self._register_values[item.row()]))
 
-    def export_config(self):
+    def export_config(self) -> list:
+        """
+        Export labels
+
+        :return: Return a list of labels.
+        """
         labels = []
         for i in range(self.rowCount()):
             item = self.item(i, 1)
             labels.append(item.text())
         return labels
 
-    def import_config(self, data):
-        # import label
-        labels = data
+    def import_config(self, labels: list):
+        """
+        Import labels
+
+        :param labels: A list that contains labels.
+        """
+        if type(labels) is not list:
+            return
+
         for i in range(min(self._quantity, len(labels))):
             # column 1 : label
             item = QTableWidgetItem(str(labels[i]))

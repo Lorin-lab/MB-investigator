@@ -24,6 +24,7 @@ from ui import UI_comSettings
 
 class ComSettings(QMainWindow):
     """This class contains the communication parameters and is the menu for editing them."""
+
     def __init__(self, parent, call_back_func):
         super(ComSettings, self).__init__(parent)
         self._call_back_func = call_back_func
@@ -148,9 +149,12 @@ class ComSettings(QMainWindow):
         self._ui.tcp_group_box.setDisabled(not is_tcp)
         self._ui.rtu_group_box.setDisabled(is_tcp)
 
-    def export_config(self):
-        """Export configuration"""
-        """Return settings values into Python obj"""
+    def export_config(self) -> dict:
+        """
+        Export configuration
+
+        :return: Return parameters into a dictionary.
+        """
         data = {
             "mode": self.mode,
             "timeout": self.timeout,
@@ -167,27 +171,34 @@ class ComSettings(QMainWindow):
         }
         return data
 
-    def import_config(self, data):
-        """Import configuration"""
+    def import_config(self, data: dict):
+        """
+        Import configuration
+
+        :param data: Dict that contains parameters to be imported.
+        """
+        if data is None:
+            return
 
         # Write data into the widget. Because widget have value check.
         # General
-        self._ui.timeout.setText(str(data["timeout"]))
-        self._ui.button_mode_TCP.setChecked(data["mode"] == self.MbMode.TCP)
-        self._ui.button_mode_RTU.setChecked(data["mode"] == self.MbMode.RTU)
+        self._ui.timeout.setText(str(data.get("timeout", self.timeout)))
+        mode = data.get("mode", self.mode)
+        self._ui.button_mode_TCP.setChecked(mode == self.MbMode.TCP)
+        self._ui.button_mode_RTU.setChecked(mode == self.MbMode.RTU)
         self._on_mode_changed()
 
         # TCP settings
-        self._ui.port_edit.setText(str(data["port"]))
-        self._ui.IP_edit.setText(data["ip"])
+        self._ui.port_edit.setText(str(data.get("port", self.port)))
+        self._ui.IP_edit.setText(data.get("ip", self.ip))
 
         # RTU settings
-        self._ui.serial_port_name_cb.set_current_by_value(data["serial_port_name"])
-        self._ui.baud_rate_cb.set_current_by_value(data["baud_rate"])
-        self._ui.data_bits_cb.set_current_by_value(data["data_bits"])
-        self._ui.parity_cb.set_current_by_value(data["parity"])
-        self._ui.stop_bits_cb.set_current_by_value(data["stop_bits"])
-        self._ui.flow_control_cb.set_current_by_value(data["flow_control"])
+        self._ui.serial_port_name_cb.set_current_by_value(data.get("serial_port_name", self.serial_port_name))
+        self._ui.baud_rate_cb.set_current_by_value(data.get("baud_rate", self.baud_rate))
+        self._ui.data_bits_cb.set_current_by_value(data.get("data_bits", self.data_bits))
+        self._ui.parity_cb.set_current_by_value(data.get("parity", self.parity))
+        self._ui.stop_bits_cb.set_current_by_value(data.get("stop_bits", self.stop_bits))
+        self._ui.flow_control_cb.set_current_by_value(data.get("flow_control", self.flow_control))
 
         self._validation()  # then update var from widget
 

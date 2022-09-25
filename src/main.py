@@ -181,6 +181,15 @@ class MainWindow(QMainWindow):
     def _import_config(self):
         """Import configuration"""
 
+        # Warning message box
+        msg_box = QMessageBox()
+        msg_box.setText("Your current configuration will be lost. Are you sure you want to import?")
+        msg_box.setWindowTitle("Import")
+        msg_box.setIcon(QMessageBox.Warning)
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        if msg_box.exec() == QMessageBox.Cancel:
+            return  # Abort importing
+
         # File selection dialog
         file_dialog = QFileDialog()
         file_dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
@@ -191,36 +200,23 @@ class MainWindow(QMainWindow):
         else:  # Canceled
             return
 
-        # Disconnection warning message box
-        if self._mb_client is not None:
-            msg_box = QMessageBox()
-            msg_box.setText("You will be disconnected from the server/slave.")
-            msg_box.setWindowTitle("Import")
-            msg_box.setIcon(QMessageBox.Information)
-            msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-            if msg_box.exec() == QMessageBox.Cancel:
-                return  # Abort importing
-
+        msg_box = QMessageBox()
+        msg_box.setStandardButtons(QMessageBox.Ok)
         try:
             # get json
             file_objet = open(file_path, "r")
             data = json.load(file_objet)
             file_objet.close()
-            print(data)
 
             # import com settings
-            self._settings_com.import_config(data["com_settings"])
+            self._settings_com.import_config(data.get("com_settings", None))
 
-            # remove old tasks
-            for task in self._task_list:
-                self.removeDockWidget(task)
-            self._task_list.clear()
-
-            # import task
-            for task_data in data["tasks"]:
+            # import new task
+            new_tasks = []
+            for task_data in data.get("tasks", None):
                 # Create task
                 task = ModbusTask(self, self._mb_client)
-                self._task_list.append(task)
+                new_tasks.append(task)
                 # import task data
                 task.import_config(task_data)
                 # Dock the task as tab
@@ -228,22 +224,27 @@ class MainWindow(QMainWindow):
                 if len(self._task_list) > 1:
                     self.tabifyDockWidget(self._task_list[0], task)
 
-        except TypeError as e:
-            msg_box = QMessageBox()
-            msg_box.setText("Failure to import.\nCause: " + str(e))
+            # replace old tasks by the new ones
+            for task in self._task_list:
+                self.removeDockWidget(task)
+            self._task_list.clear()
+            self._task_list.append(new_tasks)
+
+            # if the import is successful:
+            msg_box.setText("Successful import")
+            msg_box.setWindowTitle("Successful import")
+            msg_box.setIcon(QMessageBox.Information)
+
+        except (TypeError, KeyError) as ex:
+            msg_box.setText(f"Failure to import.\nCause:\n{ex}")
             msg_box.setWindowTitle("Import failure")
             msg_box.setIcon(QMessageBox.Critical)
-            msg_box.setStandardButtons(QMessageBox.Ok)
+        except json.decoder.JSONDecodeError as ex:
+            msg_box.setText(f"Failure to import. The json format of the file is invalid. \nDetails:\n{ex}")
+            msg_box.setWindowTitle("Import failure")
+            msg_box.setIcon(QMessageBox.Critical)
+        finally:
             msg_box.exec()
-            return  # Abort importing
-
-        # if the import is successful:
-        msg_box = QMessageBox()
-        msg_box.setText("Successful import")
-        msg_box.setWindowTitle("Successful import")
-        msg_box.setIcon(QMessageBox.Information)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec()
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

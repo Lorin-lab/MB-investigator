@@ -153,8 +153,12 @@ class MbTaskSettings(QMainWindow):
             self._ui.quantity_edit.set_value(end_value - start_value + 1)
         self._ui.end_address_edit.set_value(end_value)
 
-    def export_config(self):
-        """Export configuration"""
+    def export_config(self) -> dict:
+        """
+        Export configuration
+
+        :return: Return parameters into a dictionary.
+        """
         data = {
             "task_name": self.task_name,
             "unit_id": self.unit_id,
@@ -165,17 +169,23 @@ class MbTaskSettings(QMainWindow):
         }
         return data
 
-    def import_config(self, data):
-        """Import configuration"""
-        # Write data into the widget. Because widget have value check.
-        self._ui.task_name_edit.setText(str(data["task_name"]))
-        self._ui.unit_id_edit.setText(str(data["unit_id"]))
-        self._ui.start_address_edit.setText(str(data["starting_address"]))
-        self._ui.quantity_edit.setText(str(data["quantity"]))
+    def import_config(self, data: dict):
+        """
+        Import configuration
 
-        self._ui.read_func_cb.set_current_by_value(data["read_func"])
+        :param data: Dict that contains parameters to be imported.
+        """
+        if data is None:
+            return
+        # Write data into the widget. Because widget have value check.
+        self._ui.task_name_edit.setText(str(data.get("task_name", self.task_name)))
+        self._ui.unit_id_edit.setText(str(data.get("unit_id", self.unit_id)))
+        self._ui.start_address_edit.setText(str(data.get("starting_address", self.starting_address)))
+        self._ui.quantity_edit.setText(str(data.get("quantity", self.quantity)))
+
+        self._ui.read_func_cb.set_current_by_value(data.get("read_func", self.read_func))
         self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex())
-        self._ui.write_func_cb.set_current_by_value(data["write_func"])
+        self._ui.write_func_cb.set_current_by_value(data.get("write_func", self.write_func))
 
         self._validation()
 

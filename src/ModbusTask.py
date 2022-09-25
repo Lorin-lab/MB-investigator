@@ -154,21 +154,31 @@ class ModbusTask(QDockWidget):
         except OSError as ex:
             self._ui.log_print(str(ex))
 
-    def export_config(self):
-        """Export configuration"""
+    def export_config(self) -> dict:
+        """
+        Export configuration
+
+        :return: Return parameters into a dictionary.
+        """
         config = {
             "settings": self._settings.export_config(),
             "labels": self._ui.table_widget.export_config()
         }
         return config
 
-    def import_config(self, data):
-        """Import configuration"""
+    def import_config(self, data: dict):
+        """
+        Import configuration
+
+        :param data: Dict that contains parameters to be imported.
+        """
+        if data is None:
+            return
         # import modbus settings
-        self._settings.import_config(data["settings"])
+        self._settings.import_config(data.get("settings", None))
 
         # import label
-        self._ui.table_widget.import_config(data["labels"])
+        self._ui.table_widget.import_config(data.get("labels", None))
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

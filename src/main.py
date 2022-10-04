@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
         # Instantiates the communication parameters and their menu.
         self._settings_com = ComSettings(self, self._on_settings_update)
 
-        self._mb_client = None  # Modbus client
+        self._modbus_client = None  # Modbus client
         self._task_list = []
 
         self._ui = self._setup_ui()
@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
 
     def _on_settings_update(self):
         """Is called when the new communications configuration is validated"""
-        self._mb_client = None  # New settings -> client not connected
+        self._modbus_client = None  # New settings -> client not connected
         self._update_task_client_objet()
 
     def _try_connect_client(self):
@@ -60,12 +60,14 @@ class MainWindow(QMainWindow):
 
         # TCP MODE
         if self._settings_com.mode == ComSettings.MbMode.TCP:
-            print("Try connecting to " + self._settings_com.ip + " ...")
-            self._ui.status_bar.showMessage("Try connecting to " + self._settings_com.ip + " ...")
+            # print message
+            text = f"Attempt to connecting to {self._settings_com.ip} ..."
+            print(text)
+            self._ui.status_bar.showMessage(text)
             self.repaint()
 
             # setup client
-            self._mb_client = modbus_tcp.TcpMaster(
+            self._modbus_client = modbus_tcp.TcpMaster(
                 self._settings_com.ip,
                 self._settings_com.port,
                 self._settings_com.timeout
@@ -73,14 +75,11 @@ class MainWindow(QMainWindow):
 
         # RTU MODE
         if self._settings_com.mode == ComSettings.MbMode.RTU:
-            # Check serial port
-            if self._settings_com.serial_port_name is None:
-                self._ui.status_bar.showMessage("No serial port selected")
-                return
 
             # Print message
-            print("Try opening " + str(self._settings_com.serial_port_name) + " ...")
-            self._ui.status_bar.showMessage("Try opening " + str(self._settings_com.serial_port_name) + " ...")
+            text = f"Attempt to opening {self._settings_com.serial_port_name} ..."
+            print(text)
+            self._ui.status_bar.showMessage(text)
             self.repaint()
 
             # setup client
@@ -95,48 +94,54 @@ class MainWindow(QMainWindow):
                 dsrdtr=(self._settings_com.flow_control == ComSettings.FlowControl.DSR_DTR)
             )
             serial_port.port = self._settings_com.serial_port_name
-            self._mb_client = modbus_rtu.RtuMaster(serial_port)
-            self._mb_client.set_timeout(self._settings_com.timeout, True)
+            self._modbus_client = modbus_rtu.RtuMaster(serial_port)
+            self._modbus_client.set_timeout(self._settings_com.timeout, True)
 
         # Try connection
+        msg_box = QMessageBox()
+        msg_box.setStandardButtons(QMessageBox.Ok)
         try:
-            # Try connection
-            self._mb_client.open()
+            self._modbus_client.open()
+        except (OSError, serial.SerialException) as ex:
+            self._modbus_client = None
 
-            # Successful connection
-            self._ui.status_bar.showMessage("Connected.")
-            print("Connected")
+            msg_box.setWindowTitle("Fail to connect")
+            msg_box.setText(f"Fail to connect.\n\nException : {type(ex).__name__}.\n\n{ex}")
+            msg_box.setIcon(QMessageBox.Critical)
+
+            self._ui.status_bar.showMessage("Fail to connect.")
+            print("Fail to connect.")
+        else:
             self._update_task_client_objet()
-        except ConnectionRefusedError:
-            self._ui.status_bar.showMessage("Connection Refused.")
-            self._mb_client = None
-        except serial.SerialException as ex:
-            self._ui.status_bar.showMessage(str(ex))
-            self._mb_client = None
-        except OSError as ex:
-            print(ex)
-            self._ui.status_bar.showMessage(str(ex))
-            self._mb_client = None
+
+            msg_box.setWindowTitle("Success")
+            msg_box.setText("Successfully connected.")
+            msg_box.setIcon(QMessageBox.Information)
+
+            self._ui.status_bar.showMessage("Connected.")
+            print("Connected.")
+        finally:
+            msg_box.exec()
 
     def _try_disconnect_client(self):
         """Disconnect the modbus client"""
-        if self._mb_client is None:
+        if self._modbus_client is None:
             self._ui.status_bar.showMessage("Already disconnected.")
             return
 
         self._ui.status_bar.showMessage("Disconnection...")
-        self._mb_client.close()
-        self._mb_client = None
+        self._modbus_client.close()
+        self._modbus_client = None
         self._update_task_client_objet()
         self._ui.status_bar.showMessage("Disconnected.")
 
     def _add_com_task(self):
         """Adds modbus task."""
-        task = ModbusTask(self, self._mb_client)
+        task = ModbusTask(self, self._modbus_client)
         self._task_list.append(task)
 
         # Dock the task as tab
-        self.addDockWidget(Qt.RightDockWidgetArea, task)
+        self.addDockWidget(Qt.TopDockWidgetArea, task)
         if len(self._task_list) > 1:
             self.tabifyDockWidget(self._task_list[0], task)
 
@@ -145,7 +150,7 @@ class MainWindow(QMainWindow):
     def _update_task_client_objet(self):
         """Updates the modbus client object for each modbus task."""
         for task in self._task_list:
-            task.mb_client = self._mb_client
+            task.modbus_client = self._modbus_client
 
     def _export_config(self):
         """Export configuration"""
@@ -215,7 +220,7 @@ class MainWindow(QMainWindow):
             new_tasks = []
             for task_data in data.get("tasks", None):
                 # Create task
-                task = ModbusTask(self, self._mb_client)
+                task = ModbusTask(self, self._modbus_client)
                 new_tasks.append(task)
                 # import task data
                 task.import_config(task_data)

@@ -28,9 +28,9 @@ class ModbusTask(QDockWidget):
     """
     task_number = 0
 
-    def __init__(self, parent, mb_client):
+    def __init__(self, parent, modbus_client):
         super(ModbusTask, self).__init__("New task", parent)
-        self.mb_client = mb_client
+        self.modbus_client = modbus_client
 
         # Instantiates the modbus parameters and their menu.
         self._settings = MbTaskSettings.MbTaskSettings(self, self._on_settings_update)
@@ -65,7 +65,7 @@ class ModbusTask(QDockWidget):
     def _mb_reading_execute(self):
         """Execute modbus reading function"""
         # Checking client
-        if self.mb_client is None:
+        if self.modbus_client is None:
             self._ui.log_print("Client not connected")
             return
 
@@ -74,7 +74,7 @@ class ModbusTask(QDockWidget):
 
         try:
             # Reading data
-            datas = self.mb_client.execute(
+            datas = self.modbus_client.execute(
                 self._settings.unit_id,
                 self._settings.read_func,
                 self._settings.starting_address,
@@ -100,7 +100,7 @@ class ModbusTask(QDockWidget):
         """Execute modbus writing function"""
 
         # Checking client
-        if self.mb_client is None:
+        if self.modbus_client is None:
             self._ui.log_print("Client not connected")
             return
         # Checking available function
@@ -119,7 +119,7 @@ class ModbusTask(QDockWidget):
                     self._settings.write_func == cst.WRITE_MULTIPLE_REGISTERS:
                 self._ui.log_print("Writing...")
                 self.repaint()
-                feedback = self.mb_client.execute(
+                feedback = self.modbus_client.execute(
                     self._settings.unit_id,
                     self._settings.write_func,
                     self._settings.starting_address,
@@ -133,7 +133,7 @@ class ModbusTask(QDockWidget):
                 for i in range(len(data)):
                     self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
                     self.repaint()
-                    feedback = self.mb_client.execute(
+                    feedback = self.modbus_client.execute(
                         self._settings.unit_id,
                         self._settings.write_func,
                         (self._settings.starting_address + i),

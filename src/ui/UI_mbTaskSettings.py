@@ -75,7 +75,7 @@ class UiMbTaskSettings(object):
 
         # Quantity edit
         self.quantity_edit = QIntegerLineEdit()
-        self.quantity_edit.setValidator(Validators.DecValidator(0, 2000))
+        self.quantity_edit.setValidator(Validators.DecValidator(1, 2000))
 
         # form Layout
         form_layout = QFormLayout()

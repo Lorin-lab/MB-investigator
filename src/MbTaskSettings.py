@@ -79,8 +79,8 @@ class MbTaskSettings(QMainWindow):
         self._ui.task_name_edit.setText(self.task_name)
         self._ui.unit_id_edit.setText(str(self.unit_id))
         self._ui.start_address_edit.set_value(self.starting_address)
-        self._ui.end_address_edit.set_value(0)
         self._ui.quantity_edit.setText(str(self.quantity))
+        self._on_quantity_edited()
 
         self._ui.read_func_cb.set_current_by_value(self.read_func)
         self._on_read_func_cb_change(self._ui.read_func_cb.currentIndex())

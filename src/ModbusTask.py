@@ -57,10 +57,11 @@ class ModbusTask(QDockWidget):
         else:
             self._ui.write_button.setEnabled(True)
 
-        # Reset table
-        self._ui.table_widget.change_registers_set(self._settings.starting_address,
-                                                   self._settings.quantity,
-                                                   self._settings.write_func)
+        # update table
+        self._ui.table_widget.change_address_set(self._settings.starting_address,
+                                                 self._settings.quantity,
+                                                 self._settings.read_func,
+                                                 self._settings.write_func)
 
     def _mb_reading_execute(self):
         """Execute modbus reading function"""

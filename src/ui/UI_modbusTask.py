@@ -43,11 +43,11 @@ class UiModbusTask(object):
         v_layout.addLayout(h_layout)
 
         self.read_button = QPushButton()
-        self.read_button.setText("Read")
+        self.read_button.setText("Read all")
         h_layout.addWidget(self.read_button)
 
         self.write_button = QPushButton()
-        self.write_button.setText("Write")
+        self.write_button.setText("Write all")
         h_layout.addWidget(self.write_button)
 
         self.open_settings_btn = QPushButton()

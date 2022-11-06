@@ -24,7 +24,7 @@ import ui.custome_widgets.CustomQValidators as Validators
 class UiMbTaskSettings(object):
     """This class contains all the widgets and configures them for the task configuration menu."""
     def __init__(self, main_window):
-        main_window.setWindowTitle('Task settings')
+        main_window.setWindowTitle('Range settings')
         main_layout = QVBoxLayout()
         widget = QWidget()
         widget.setLayout(main_layout)
@@ -42,7 +42,7 @@ class UiMbTaskSettings(object):
         self.unit_id_edit.setValidator(Validators.DecValidator(0, 255))
 
         form_layout = QFormLayout()
-        form_layout.addRow("Task name", self.task_name_edit)
+        form_layout.addRow("Range name", self.task_name_edit)
         form_layout.addRow("Unit ID", self.unit_id_edit)
         main_layout.addLayout(form_layout)
 

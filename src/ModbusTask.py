@@ -36,7 +36,7 @@ class ModbusTask(QDockWidget):
         self._settings = MbTaskSettings.MbTaskSettings(self, self._on_settings_update)
 
         ModbusTask.task_number += 1
-        self._settings.task_name = "Task {0}".format(ModbusTask.task_number)
+        self._settings.task_name = "Range {0}".format(ModbusTask.task_number)
         self._settings.update_widgets()
 
         self._ui = self._setup_ui()

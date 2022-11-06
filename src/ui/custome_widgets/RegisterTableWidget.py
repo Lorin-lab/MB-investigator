@@ -49,12 +49,13 @@ class RegisterTableWidget(QTableWidget):
         :param read_func: Modbus function for read access
         :param write_func: Modbus function for writ access
         """
-        old_row = []
+
         # Save old row
+        old_row = []
         for i in range(self._quantity):
             old_row.append(self._get_row(i))
 
-        new_values = []
+        self._register_values.clear()
         self.setRowCount(new_quantity)
 
         for i in range(new_quantity):
@@ -62,23 +63,21 @@ class RegisterTableWidget(QTableWidget):
             index_of_the_old_list = (new_starting_address - self._starting_address + i)
             if (0 <= index_of_the_old_list < self._quantity) and read_func == self._read_func:
                 # Keeps the old row.
+                self._register_values.append(old_row[index_of_the_old_list].register_value)
                 self._set_row(i, old_row[index_of_the_old_list])
-                new_values.append(old_row[index_of_the_old_list].register_value)
             else:
                 # Create a new row.
                 item = QTableWidgetItem(str(new_starting_address + i))
                 item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
                 self.setItem(i, 0, item)  # column 0 : modbus address
                 self.setItem(i, 1, QTableWidgetItem(""))  # column 1 : libelle
-                new_values.append(None)
+                self._register_values.append(None)
 
         # save new parameters
         self._starting_address = new_starting_address
         self._quantity = new_quantity
         self._write_func = write_func
         self._read_func = read_func
-        self._register_values.clear()
-        self._register_values.extend(new_values)
 
         # Update register value
         self.set_register_values(self._register_values)

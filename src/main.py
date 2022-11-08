@@ -144,6 +144,8 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.TopDockWidgetArea, task)
         if len(self._task_list) > 1:
             self.tabifyDockWidget(self._task_list[0], task)
+            task.show()
+            task.raise_()  # show + raise : move tab to the front
 
         task.open_settings()
 

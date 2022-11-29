@@ -46,6 +46,6 @@ class UiAboutWin(object):
             "Source code: "
             "<a href=\"https://github.com/Lorin-lab/MB-investigator\">https://github.com/Lorin-lab/MB-investigator</a>"
         )
-        source_code_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        source_code_link.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         source_code_link.setOpenExternalLinks(True)
         v_layout.addWidget(source_code_link)

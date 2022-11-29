@@ -68,7 +68,7 @@ class RegisterTableWidget(QTableWidget):
             else:
                 # Create a new row.
                 item = QTableWidgetItem(str(new_starting_address + i))
-                item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
+                item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
                 self.setItem(i, 0, item)  # column 0 : modbus address
                 self.setItem(i, 1, QTableWidgetItem(""))  # column 1 : libelle
                 self._register_values.append(None)

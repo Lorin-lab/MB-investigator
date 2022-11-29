@@ -71,7 +71,7 @@ class UiMain(object):
         # Tool bar
         # ****************************
         self.toolbar = QToolBar(main_window)
-        main_window.addToolBar(Qt.LeftToolBarArea, self.toolbar)
+        main_window.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
         # config button
         self.client_config_tool_btn = QToolButton()
         self.client_config_tool_btn.setAutoRaise(True)

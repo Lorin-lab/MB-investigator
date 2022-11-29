@@ -60,7 +60,8 @@ class UiModbusTask(object):
         self.plain_text_log = QPlainTextEdit()
         self.plain_text_log.setFixedHeight(40)
         self.plain_text_log.setTextInteractionFlags(
-            Qt.TextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard))
+            Qt.TextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |
+                                    Qt.TextInteractionFlag.TextSelectableByKeyboard))
         self.log_print("Ready")
         v_layout.addWidget(self.plain_text_log)
 

@@ -19,7 +19,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from modbus_tk import modbus_tcp, modbus_rtu, hooks
+from modbus_tk import modbus_tcp, modbus_rtu
 import serial
 import json
 from datetime import datetime
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         self._task_list.append(task)
 
         # Dock the task as tab
-        self.addDockWidget(Qt.TopDockWidgetArea, task)
+        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, task)
         if len(self._task_list) > 1:
             self.tabifyDockWidget(self._task_list[0], task)
             task.show()
@@ -227,7 +227,7 @@ class MainWindow(QMainWindow):
                 # import task data
                 task.import_config(task_data)
                 # Dock the task as tab
-                self.addDockWidget(Qt.RightDockWidgetArea, task)
+                self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, task)
                 if len(self._task_list) > 1:
                     self.tabifyDockWidget(self._task_list[0], task)
 

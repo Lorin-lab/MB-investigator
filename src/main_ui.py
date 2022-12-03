@@ -21,7 +21,7 @@ from PyQt5.QtCore import *
 from utils import *
 
 
-class UiMain(object):
+class MainWindowUI(object):
     """This class contains all the widgets and configures them for the main window."""
     def __init__(self, main_window):
         main_window.setWindowTitle('MB-Investigator')
@@ -55,11 +55,11 @@ class UiMain(object):
         com_menu.addAction(self.action_open_com)
         com_menu.addAction(self.action_close_com)
 
-        # Tasks
-        self.action_add_task = QAction("Add Range", main_window)
+        # Ranges
+        self.action_add_range = QAction("Add Range", main_window)
 
-        task_menu = menu_bar.addMenu('Range')
-        task_menu.addAction(self.action_add_task)
+        range_menu = menu_bar.addMenu('Range')
+        range_menu.addAction(self.action_add_range)
 
         # ****************************
         # Status bar
@@ -93,7 +93,7 @@ class UiMain(object):
         self.disconnect_tool_btn.setToolTip("Close/Disconnect")
         self.toolbar.addWidget(self.disconnect_tool_btn)
 
-        # Add com task button
+        # Add com range button
         self.Add_section_tool_btn = QToolButton()
         self.Add_section_tool_btn.setAutoRaise(True)
         self.Add_section_tool_btn.setIcon(QIcon(resource_path("icons/outline_add_box_black_24dp.png")))

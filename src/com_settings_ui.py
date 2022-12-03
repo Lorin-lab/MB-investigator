@@ -16,11 +16,11 @@ see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
 
-from ui.custome_widgets.QCustomComboBox import QCustomComboBox
-import ui.custome_widgets.CustomQValidators as Validators
+from custome_widgets.QCustomComboBox import QCustomComboBox
+import custome_widgets.CustomQValidators as Validators
 
 
-class UiComSettings(object):
+class ComSettingsUI(object):
     """This class contains all the widgets and configures them for the communications configuration menu."""
     def __init__(self, main_window):
         general_layout = QVBoxLayout()

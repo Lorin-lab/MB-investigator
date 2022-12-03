@@ -16,13 +16,13 @@ see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
 
-from ui.custome_widgets.QCustomComboBox import QCustomComboBox
-from ui.custome_widgets.IntegerLineEdit import QIntegerLineEdit
-import ui.custome_widgets.CustomQValidators as Validators
+from custome_widgets.QCustomComboBox import QCustomComboBox
+from custome_widgets.IntegerLineEdit import QIntegerLineEdit
+import custome_widgets.CustomQValidators as Validators
 
 
-class UiMbTaskSettings(object):
-    """This class contains all the widgets and configures them for the task configuration menu."""
+class RangeSettingsWin(object):
+    """This class contains all the widgets and configures them for the range configuration menu."""
     def __init__(self, main_window):
         main_window.setWindowTitle('Range settings')
         main_layout = QVBoxLayout()
@@ -33,16 +33,16 @@ class UiMbTaskSettings(object):
         # ****************************
         # other settings
         # ****************************
-        # Task name edit
-        self.task_name_edit = QLineEdit()
-        self.task_name_edit.setMaxLength(20)
+        # range name edit
+        self.range_name_edit = QLineEdit()
+        self.range_name_edit.setMaxLength(20)
 
         # unit id
         self.unit_id_edit = QLineEdit()
         self.unit_id_edit.setValidator(Validators.DecValidator(0, 255))
 
         form_layout = QFormLayout()
-        form_layout.addRow("Range name", self.task_name_edit)
+        form_layout.addRow("Range name", self.range_name_edit)
         form_layout.addRow("Unit ID", self.unit_id_edit)
         main_layout.addLayout(form_layout)
 

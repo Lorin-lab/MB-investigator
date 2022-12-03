@@ -17,11 +17,11 @@ see <https://www.gnu.org/licenses/>.
 from PyQt5.QtWidgets import *
 import modbus_tk.defines as cst
 
-from ui import UI_mbTaskSettings
-import ui.custome_widgets.CustomQValidators as Validators
+import range_settings_ui
+import custome_widgets.CustomQValidators as Validators
 
 
-class MbTaskSettings(QMainWindow):
+class RangeSettingsUI(QMainWindow):
     """
     This class contains the modbus parameters of a task and is the menu for editing them.
     """
@@ -33,11 +33,11 @@ class MbTaskSettings(QMainWindow):
         :param parent: The parent window.
         :param call_back_func: The function to call back when new settings are set.
         """
-        super(MbTaskSettings, self).__init__(parent)
+        super(RangeSettingsUI, self).__init__(parent)
         self.call_back_func = call_back_func
 
         # Settings
-        self.task_name = "New task"
+        self.name = "New task"
         self.unit_id = 1
         self.starting_address = 0
         self.quantity = 10
@@ -58,7 +58,7 @@ class MbTaskSettings(QMainWindow):
 
     def _validation(self):
         """save the settings close the menu and call the 'call back' function"""
-        self.task_name = self._ui.task_name_edit.text()
+        self.name = self._ui.range_name_edit.text()
         self.unit_id = int(self._ui.unit_id_edit.text())
         self.starting_address = self._ui.start_address_edit.get_value()
         self.quantity = int(self._ui.quantity_edit.text())
@@ -76,7 +76,7 @@ class MbTaskSettings(QMainWindow):
 
     def update_widgets(self):
         """Set widgets with the current parameter value"""
-        self._ui.task_name_edit.setText(self.task_name)
+        self._ui.range_name_edit.setText(self.name)
         self._ui.unit_id_edit.setText(str(self.unit_id))
         self._ui.start_address_edit.set_value(self.starting_address)
         self._ui.quantity_edit.setText(str(self.quantity))
@@ -160,7 +160,7 @@ class MbTaskSettings(QMainWindow):
         :return: Return parameters into a dictionary.
         """
         data = {
-            "task_name": self.task_name,
+            "task_name": self.name,
             "unit_id": self.unit_id,
             "starting_address": self.starting_address,
             "quantity": self.quantity,
@@ -178,7 +178,7 @@ class MbTaskSettings(QMainWindow):
         if data is None:
             return
         # Write data into the widget. Because widget have value check.
-        self._ui.task_name_edit.setText(str(data.get("task_name", self.task_name)))
+        self._ui.range_name_edit.setText(str(data.get("task_name", self.name)))
         self._ui.unit_id_edit.setText(str(data.get("unit_id", self.unit_id)))
         self._ui.start_address_edit.setText(str(data.get("starting_address", self.starting_address)))
         self._ui.quantity_edit.setText(str(data.get("quantity", self.quantity)))
@@ -193,7 +193,7 @@ class MbTaskSettings(QMainWindow):
         """
         Load widgets and connect them to function.
         """
-        ui = UI_mbTaskSettings.UiMbTaskSettings(self)
+        ui = range_settings_ui.RangeSettingsWin(self)
 
         ui.read_func_cb.currentIndexChanged.connect(self._on_read_func_cb_change)
         ui.start_address_edit.editingFinished.connect(self._on_start_address_edited)

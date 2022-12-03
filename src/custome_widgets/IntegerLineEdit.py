@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License along with MB-
 see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
-import ui.custome_widgets.CustomQValidators as Validators
+import custome_widgets.CustomQValidators as Validators
 
 
 class QIntegerLineEdit(QLineEdit):

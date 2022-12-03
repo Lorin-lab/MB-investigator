@@ -18,11 +18,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from datetime import datetime
-from ui.custome_widgets.RegisterTableWidget import RegisterTableWidget
+from custome_widgets.RegisterTableWidget import RegisterTableWidget
 
 
-class UiModbusTask(object):
-    """This class contains all the widgets and configures them for the modbus task menu."""
+class RangeUI(object):
+    """This class contains all the widgets and configures them for the addr range window."""
     def __init__(self, main_window):
         v_layout = QVBoxLayout()
         widget = QWidget()

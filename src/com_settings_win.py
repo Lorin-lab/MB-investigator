@@ -19,14 +19,14 @@ from PyQt5.QtGui import *
 import serial
 import serial.tools.list_ports
 
-from ui import UI_comSettings
+import com_settings_ui
 
 
-class ComSettings(QMainWindow):
+class ComSettingsWin(QMainWindow):
     """This class contains the communication parameters and is the menu for editing them."""
 
     def __init__(self, parent, call_back_func):
-        super(ComSettings, self).__init__(parent)
+        super(ComSettingsWin, self).__init__(parent)
         self._call_back_func = call_back_func
 
         # General Settings
@@ -204,7 +204,7 @@ class ComSettings(QMainWindow):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_comSettings.UiComSettings(self)
+        ui = com_settings_ui.ComSettingsUI(self)
 
         # general settings
         ui.mode_button_group.idClicked.connect(self._on_mode_changed)

@@ -18,25 +18,25 @@ from PyQt5.QtWidgets import *
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
-from ui import UI_modbusTask
-import MbTaskSettings
+import range_ui
+import range_settings_win
 
 
-class ModbusTask(QDockWidget):
+class RangeWin(QDockWidget):
     """Object for reading and writing to a modbus address range according to parameters.
     All presented with a graphic interface.
     """
-    task_number = 0
+    range_counter = 0
 
     def __init__(self, parent, modbus_client):
-        super(ModbusTask, self).__init__("New task", parent)
+        super(RangeWin, self).__init__("New range", parent)
         self.modbus_client = modbus_client
 
         # Instantiates the modbus parameters and their menu.
-        self._settings = MbTaskSettings.MbTaskSettings(self, self._on_settings_update)
+        self._settings = range_settings_win.RangeSettingsUI(self, self._on_settings_update)
 
-        ModbusTask.task_number += 1
-        self._settings.task_name = "Range {0}".format(ModbusTask.task_number)
+        RangeWin.range_counter += 1
+        self._settings.name = "Range {0}".format(RangeWin.range_counter)
         self._settings.update_widgets()
 
         self._ui = self._setup_ui()
@@ -49,7 +49,7 @@ class ModbusTask(QDockWidget):
     def _on_settings_update(self):
         """Is called when the new modbus configuration is validated. Update widgets"""
         # Update dock title
-        self.setWindowTitle(self._settings.task_name)
+        self.setWindowTitle(self._settings.name)
 
         # disable/enable Writing button
         if self._settings.write_func is None:
@@ -183,7 +183,7 @@ class ModbusTask(QDockWidget):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_modbusTask.UiModbusTask(self)
+        ui = range_ui.RangeUI(self)
         ui.read_button.clicked.connect(self._mb_reading_execute)
         ui.write_button.clicked.connect(self._mb_writing_execute)
         ui.open_settings_btn.clicked.connect(self.open_settings)

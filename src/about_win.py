@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License along with MB-
 see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
-from ui import UI_about_win
+import about_ui
 
 
 class AboutWin(QMainWindow):
@@ -24,5 +24,5 @@ class AboutWin(QMainWindow):
         self._ui = self._setup_ui()
 
     def _setup_ui(self):
-        ui = UI_about_win.UiAboutWin(self)
+        ui = about_ui.AboutUI(self)
         return ui

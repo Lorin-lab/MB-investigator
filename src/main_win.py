@@ -24,10 +24,10 @@ import serial
 import json
 from datetime import datetime
 
-from ComSettings import ComSettings
-from ui import UI_main
+from com_settings_win import ComSettingsWin
+import main_ui
 import about_win
-from ModbusTask import ModbusTask
+from range_win import RangeWin
 import version
 
 
@@ -38,10 +38,10 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Instantiates the communication parameters and their menu.
-        self._settings_com = ComSettings(self, self._on_settings_update)
+        self._settings_com = ComSettingsWin(self, self._on_settings_update)
 
         self._modbus_client = None  # Modbus client
-        self._task_list = []
+        self._range_win_list = []
 
         self._ui = self._setup_ui()
         self._ui.status_bar.showMessage("Welcome")
@@ -53,13 +53,13 @@ class MainWindow(QMainWindow):
     def _on_settings_update(self):
         """Is called when the new communications configuration is validated"""
         self._modbus_client = None  # New settings -> client not connected
-        self._update_task_client_objet()
+        self._update_range_client_objet()
 
     def _try_connect_client(self):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
 
         # TCP MODE
-        if self._settings_com.mode == ComSettings.MbMode.TCP:
+        if self._settings_com.mode == ComSettingsWin.MbMode.TCP:
             # print message
             text = f"Attempt to connecting to {self._settings_com.ip} ..."
             print(text)
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
             )
 
         # RTU MODE
-        if self._settings_com.mode == ComSettings.MbMode.RTU:
+        if self._settings_com.mode == ComSettingsWin.MbMode.RTU:
 
             # Print message
             text = f"Attempt to opening {self._settings_com.serial_port_name} ..."
@@ -89,9 +89,9 @@ class MainWindow(QMainWindow):
                 bytesize=self._settings_com.data_bits,
                 parity=self._settings_com.parity,
                 stopbits=self._settings_com.stop_bits,
-                xonxoff=(self._settings_com.flow_control == ComSettings.FlowControl.XON_XOFF),
-                rtscts=(self._settings_com.flow_control == ComSettings.FlowControl.RTS_CTS),
-                dsrdtr=(self._settings_com.flow_control == ComSettings.FlowControl.DSR_DTR)
+                xonxoff=(self._settings_com.flow_control == ComSettingsWin.FlowControl.XON_XOFF),
+                rtscts=(self._settings_com.flow_control == ComSettingsWin.FlowControl.RTS_CTS),
+                dsrdtr=(self._settings_com.flow_control == ComSettingsWin.FlowControl.DSR_DTR)
             )
             serial_port.port = self._settings_com.serial_port_name
             self._modbus_client = modbus_rtu.RtuMaster(serial_port)
@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
             self._ui.status_bar.showMessage("Fail to connect.")
             print("Fail to connect.")
         else:
-            self._update_task_client_objet()
+            self._update_range_client_objet()
 
             msg_box.setWindowTitle("Success")
             msg_box.setText("Successfully connected.")
@@ -132,27 +132,27 @@ class MainWindow(QMainWindow):
         self._ui.status_bar.showMessage("Disconnection...")
         self._modbus_client.close()
         self._modbus_client = None
-        self._update_task_client_objet()
+        self._update_range_client_objet()
         self._ui.status_bar.showMessage("Disconnected.")
 
-    def _add_com_task(self):
-        """Adds modbus task."""
-        task = ModbusTask(self, self._modbus_client)
-        self._task_list.append(task)
+    def _add_com_range(self):
+        """Adds modbus range."""
+        addr_range = RangeWin(self, self._modbus_client)
+        self._range_win_list.append(addr_range)
 
-        # Dock the task as tab
-        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, task)
-        if len(self._task_list) > 1:
-            self.tabifyDockWidget(self._task_list[0], task)
-            task.show()
-            task.raise_()  # show + raise : move tab to the front
+        # Dock the range as tab
+        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, addr_range)
+        if len(self._range_win_list) > 1:
+            self.tabifyDockWidget(self._range_win_list[0], addr_range)
+            addr_range.show()
+            addr_range.raise_()  # show + raise : move tab to the front
 
-        task.open_settings()
+        addr_range.open_settings()
 
-    def _update_task_client_objet(self):
-        """Updates the modbus client object for each modbus task."""
-        for task in self._task_list:
-            task.modbus_client = self._modbus_client
+    def _update_range_client_objet(self):
+        """Updates the modbus client object for each modbus range."""
+        for addr_range in self._range_win_list:
+            addr_range.modbus_client = self._modbus_client
 
     def _export_config(self):
         """Export configuration"""
@@ -169,15 +169,15 @@ class MainWindow(QMainWindow):
 
         # Prepare data
         com_settings_data = self._settings_com.export_config()
-        tasks_data_list = []
-        for task in self._task_list:
-            tasks_data_list.append(task.export_config())
+        range_data_list = []
+        for range_win in self._range_win_list:
+            range_data_list.append(range_win.export_config())
 
         data = {
             "export_date": str(datetime.now()),
             "app_version": version.__VERSION__,
             "com_settings": com_settings_data,
-            "tasks": tasks_data_list
+            "range_win": range_data_list
         }
 
         # Write file
@@ -218,24 +218,29 @@ class MainWindow(QMainWindow):
             # import com settings
             self._settings_com.import_config(data.get("com_settings", None))
 
-            # import new task
-            new_tasks = []
-            for task_data in data.get("tasks", None):
-                # Create task
-                task = ModbusTask(self, self._modbus_client)
-                new_tasks.append(task)
-                # import task data
-                task.import_config(task_data)
-                # Dock the task as tab
-                self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, task)
-                if len(self._task_list) > 1:
-                    self.tabifyDockWidget(self._task_list[0], task)
+            # import new range
+            new_range_win = []
 
-            # replace old tasks by the new ones
-            for task in self._task_list:
-                self.removeDockWidget(task)
-            self._task_list.clear()
-            self._task_list.append(new_tasks)
+            range_data_list = data.get("range_win", None)  # Extract range list
+            if range_data_list is None:
+                range_data_list = data.get("tasks", None)  # Old JSON key from version 1.3.0 and earlier
+
+            for range_win_data in range_data_list:
+                # Create range
+                range_win = RangeWin(self, self._modbus_client)
+                new_range_win.append(range_win)
+                # import range data
+                range_win.import_config(range_win_data)
+                # Dock the range as tab
+                self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, range_win)
+                if len(new_range_win) > 1:
+                    self.tabifyDockWidget(new_range_win[0], range_win)
+
+            # replace old ranges by the new ones
+            for range_win in self._range_win_list:
+                self.removeDockWidget(range_win)
+            self._range_win_list.clear()
+            self._range_win_list.extend(new_range_win)
 
             # if the import is successful:
             msg_box.setText("Successful import")
@@ -255,13 +260,13 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
-        ui = UI_main.UiMain(self)
+        ui = main_ui.MainWindowUI(self)
 
         # toolbar
         ui.client_config_tool_btn.clicked.connect(self._open_settings_com)
         ui.connect_tool_btn.clicked.connect(self._try_connect_client)
         ui.disconnect_tool_btn.clicked.connect(self._try_disconnect_client)
-        ui.Add_section_tool_btn.clicked.connect(self._add_com_task)
+        ui.Add_section_tool_btn.clicked.connect(self._add_com_range)
 
         # action bar
         about = about_win.AboutWin(self)
@@ -272,7 +277,7 @@ class MainWindow(QMainWindow):
         ui.action_settings_com.triggered.connect(self._open_settings_com)
         ui.action_open_com.triggered.connect(self._try_connect_client)
         ui.action_close_com.triggered.connect(self._try_disconnect_client)
-        ui.action_add_task.triggered.connect(self._add_com_task)
+        ui.action_add_range.triggered.connect(self._add_com_range)
         return ui
 
 

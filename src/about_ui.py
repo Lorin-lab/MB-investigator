@@ -20,7 +20,7 @@ from PyQt5.QtCore import *
 import version
 
 
-class UiAboutWin(object):
+class AboutUI(object):
     """This class contains all the widgets and configures them for the about window."""
     def __init__(self, main_window):
         main_window.setWindowTitle('About')

@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['src/main.py'],
+a = Analysis(['src/main_win.py'],
              pathex=[],
              binaries=[],
              datas=[

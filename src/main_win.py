@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Instantiates the communication parameters and their menu.
-        self._settings_com = ComSettingsWin(self, self._on_settings_update)
+        self._com_settings_win = ComSettingsWin(self, self._on_settings_update)
 
         self._modbus_client = None  # Modbus client
         self._range_win_list = []
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
 
     def _open_settings_com(self):
         """Opens the communications configuration menu."""
-        self._settings_com.show()
+        self._com_settings_win.show()
 
     def _on_settings_update(self):
         """Is called when the new communications configuration is validated"""
@@ -59,25 +59,25 @@ class MainWindow(QMainWindow):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
 
         # TCP MODE
-        if self._settings_com.mode == ComSettingsWin.MbMode.TCP:
+        if self._com_settings_win.mode == ComSettingsWin.MbMode.TCP:
             # print message
-            text = f"Attempt to connecting to {self._settings_com.ip} ..."
+            text = f"Attempt to connecting to {self._com_settings_win.ip} ..."
             print(text)
             self._ui.status_bar.showMessage(text)
             self.repaint()
 
             # setup client
             self._modbus_client = modbus_tcp.TcpMaster(
-                self._settings_com.ip,
-                self._settings_com.port,
-                self._settings_com.timeout
+                self._com_settings_win.ip,
+                self._com_settings_win.port,
+                self._com_settings_win.timeout
             )
 
         # RTU MODE
-        if self._settings_com.mode == ComSettingsWin.MbMode.RTU:
+        if self._com_settings_win.mode == ComSettingsWin.MbMode.RTU:
 
             # Print message
-            text = f"Attempt to opening {self._settings_com.serial_port_name} ..."
+            text = f"Attempt to opening {self._com_settings_win.serial_port_name} ..."
             print(text)
             self._ui.status_bar.showMessage(text)
             self.repaint()
@@ -85,17 +85,17 @@ class MainWindow(QMainWindow):
             # setup client
             serial_port = serial.Serial(
                 port=None,  # Set null to avoid automatic opening
-                baudrate=self._settings_com.baud_rate,
-                bytesize=self._settings_com.data_bits,
-                parity=self._settings_com.parity,
-                stopbits=self._settings_com.stop_bits,
-                xonxoff=(self._settings_com.flow_control == ComSettingsWin.FlowControl.XON_XOFF),
-                rtscts=(self._settings_com.flow_control == ComSettingsWin.FlowControl.RTS_CTS),
-                dsrdtr=(self._settings_com.flow_control == ComSettingsWin.FlowControl.DSR_DTR)
+                baudrate=self._com_settings_win.baud_rate,
+                bytesize=self._com_settings_win.data_bits,
+                parity=self._com_settings_win.parity,
+                stopbits=self._com_settings_win.stop_bits,
+                xonxoff=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.XON_XOFF),
+                rtscts=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.RTS_CTS),
+                dsrdtr=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.DSR_DTR)
             )
-            serial_port.port = self._settings_com.serial_port_name
+            serial_port.port = self._com_settings_win.serial_port_name
             self._modbus_client = modbus_rtu.RtuMaster(serial_port)
-            self._modbus_client.set_timeout(self._settings_com.timeout, True)
+            self._modbus_client.set_timeout(self._com_settings_win.timeout, True)
 
         # Try connection
         msg_box = QMessageBox()
@@ -180,7 +180,7 @@ class MainWindow(QMainWindow):
             return
 
         # Prepare data
-        com_settings_data = self._settings_com.export_config()
+        com_settings_data = self._com_settings_win.export_config()
         range_data_list = []
         for range_win in self._range_win_list:
             range_data_list.append(range_win.export_config())
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
             file_objet.close()
 
             # import com settings
-            self._settings_com.import_config(data.get("com_settings", None))
+            self._com_settings_win.import_config(data.get("com_settings", None))
 
             # import new range
             new_range_win = []

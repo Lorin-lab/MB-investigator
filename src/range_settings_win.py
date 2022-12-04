@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License along with MB-
 see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 import modbus_tk.defines as cst
 
 import range_settings_ui
@@ -35,6 +36,7 @@ class RangeSettingsUI(QMainWindow):
         """
         super(RangeSettingsUI, self).__init__(parent)
         self.call_back_func = call_back_func
+        self.setWindowModality(Qt.WindowModality.WindowModal)
 
         # Settings
         self.name = "New task"

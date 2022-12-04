@@ -14,8 +14,9 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 import serial
 import serial.tools.list_ports
 
@@ -27,6 +28,7 @@ class ComSettingsWin(QMainWindow):
 
     def __init__(self, parent, call_back_func):
         super(ComSettingsWin, self).__init__(parent)
+        self.setWindowModality(Qt.WindowModality.WindowModal)
         self._call_back_func = call_back_func
 
         # General Settings

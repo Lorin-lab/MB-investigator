@@ -16,6 +16,7 @@ see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 import modbus_tk.defines as cst
 
 import range_settings_ui
@@ -75,6 +76,9 @@ class RangeSettingsUI(QMainWindow):
         """Reset widgets with actual settings and close the menu"""
         self.update_widgets()
         self.close()
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.update_widgets()
 
     def update_widgets(self):
         """Set widgets with the current parameter value"""

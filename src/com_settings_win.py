@@ -126,6 +126,9 @@ class ComSettingsWin(QMainWindow):
         self.update_widgets()
         self.close()
 
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.update_widgets()
+
     def update_widgets(self):
         """Set widgets with the current parameter value"""
         # General settings
@@ -136,6 +139,7 @@ class ComSettingsWin(QMainWindow):
         # TCP settings
         self._ui.port_edit.setText(str(self.port))
         self._ui.IP_edit.setText(self.ip)
+        self._on_mode_changed()
 
         # RTU settings
         self._ui.serial_port_name_cb.set_current_by_value(self.serial_port_name)

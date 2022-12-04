@@ -135,19 +135,31 @@ class MainWindow(QMainWindow):
         self._update_range_client_objet()
         self._ui.status_bar.showMessage("Disconnected.")
 
-    def _add_com_range(self):
+    def _add_range_win(self):
         """Adds modbus range."""
-        addr_range = RangeWin(self, self._modbus_client)
-        self._range_win_list.append(addr_range)
+        range_win = RangeWin(self, self._modbus_client)
+        range_win.set_close_callback(self._del_range_win)
+        self._range_win_list.append(range_win)
 
         # Dock the range as tab
-        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, addr_range)
+        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, range_win)
         if len(self._range_win_list) > 1:
-            self.tabifyDockWidget(self._range_win_list[0], addr_range)
-            addr_range.show()
-            addr_range.raise_()  # show + raise : move tab to the front
+            self.tabifyDockWidget(self._range_win_list[0], range_win)
+            range_win.show()
+            range_win.raise_()  # show + raise : move tab to the front
 
-        addr_range.open_settings()
+        # open settings
+        range_win.open_settings()
+
+    def _del_range_win(self, range_win: RangeWin):
+        """
+        Delete range window. Use for range window self delete
+        :param range_win: range to delete
+        """
+        try:
+            self._range_win_list.remove(range_win)
+        except ValueError:
+            pass
 
     def _update_range_client_objet(self):
         """Updates the modbus client object for each modbus range."""
@@ -266,7 +278,7 @@ class MainWindow(QMainWindow):
         ui.client_config_tool_btn.clicked.connect(self._open_settings_com)
         ui.connect_tool_btn.clicked.connect(self._try_connect_client)
         ui.disconnect_tool_btn.clicked.connect(self._try_disconnect_client)
-        ui.Add_section_tool_btn.clicked.connect(self._add_com_range)
+        ui.Add_section_tool_btn.clicked.connect(self._add_range_win)
 
         # action bar
         about = about_win.AboutWin(self)
@@ -277,7 +289,7 @@ class MainWindow(QMainWindow):
         ui.action_settings_com.triggered.connect(self._open_settings_com)
         ui.action_open_com.triggered.connect(self._try_connect_client)
         ui.action_close_com.triggered.connect(self._try_disconnect_client)
-        ui.action_add_range.triggered.connect(self._add_com_range)
+        ui.action_add_range.triggered.connect(self._add_range_win)
         return ui
 
 

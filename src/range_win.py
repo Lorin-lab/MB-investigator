@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License along with MB-
 see <https://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QCloseEvent
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
@@ -180,6 +181,12 @@ class RangeWin(QDockWidget):
 
         # import label
         self._ui.table_widget.import_config(data.get("labels", None))
+
+    def set_close_callback(self, func):
+        self._close_event_callback_func = func
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self._close_event_callback_func(self)
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""

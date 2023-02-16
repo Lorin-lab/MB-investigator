@@ -46,12 +46,8 @@ class RangeUI(object):
         self.read_button.setText("Read all")
         h_layout.addWidget(self.read_button)
 
-        self.write_button = QPushButton()
-        self.write_button.setText("Write all")
-        h_layout.addWidget(self.write_button)
-
         self.open_settings_btn = QPushButton()
-        self.open_settings_btn.setText("Modbus parameters")
+        self.open_settings_btn.setText("Range parameters")
         h_layout.addWidget(self.open_settings_btn)
 
         # ****************************

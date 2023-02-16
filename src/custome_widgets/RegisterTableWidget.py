@@ -18,6 +18,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import modbus_tk.defines as cst
+from register_row import RegisterRow as Row
 
 
 class RegisterTableWidget(QTableWidget):
@@ -31,7 +32,6 @@ class RegisterTableWidget(QTableWidget):
                            "background-color : #CFCFCF;"
                            "border: 2px solid black;"
                            "}")
-        self.itemChanged.connect(self._on_table_item_changed)
 
         self._register_values = []
 
@@ -53,7 +53,7 @@ class RegisterTableWidget(QTableWidget):
         # Save old row
         old_row = []
         for i in range(self._quantity):
-            old_row.append(self._get_row(i))
+            old_row.append(self.get_row(i))
 
         self._register_values.clear()
         self.setRowCount(new_quantity)
@@ -64,7 +64,7 @@ class RegisterTableWidget(QTableWidget):
             if (0 <= index_of_the_old_list < self._quantity) and read_func == self._read_func:
                 # Keeps the old row.
                 self._register_values.append(old_row[index_of_the_old_list].register_value)
-                self._set_row(i, old_row[index_of_the_old_list])
+                self.set_row_by_index(i, old_row[index_of_the_old_list])
             else:
                 # Create a new row.
                 item = QTableWidgetItem(str(new_starting_address + i))
@@ -82,7 +82,7 @@ class RegisterTableWidget(QTableWidget):
         # Update register value
         self.set_register_values(self._register_values)
 
-    def _get_row(self, index):
+    def get_row(self, index) -> Row:
         """
         Get the row content
         :param index: index of the row
@@ -93,12 +93,12 @@ class RegisterTableWidget(QTableWidget):
         except ValueError:
             value = None
 
-        row = self._Row(addr=int(self.item(index, 0).text()),
-                        label=(self.item(index, 1).text()),
-                        value=value)
+        row = Row(addr=int(self.item(index, 0).text()),
+                  label=(self.item(index, 1).text()),
+                  value=value)
         return row
 
-    def _set_row(self, index: int, row):
+    def set_row_by_index(self, index: int, row: Row):
         """
         Set the content of a row
         :param index: index of the row
@@ -109,6 +109,15 @@ class RegisterTableWidget(QTableWidget):
         self.setItem(index, 1, QTableWidgetItem(str(row.label)))
         self.setItem(index, 2, QTableWidgetItem(str(row.register_value)))
 
+    def set_row(self, row: Row):
+        """
+        Set the content of a row
+        :param row: the content of the row
+        :return:
+        """
+        index = row.register_addr - self._starting_address
+        self.set_row_by_index(index, row)
+
     def set_register_values(self, values: list):
         self._register_values = values
         self._update_value_display()
@@ -117,35 +126,11 @@ class RegisterTableWidget(QTableWidget):
         for i in range(self._quantity):
             # column 2 : value
             item = QTableWidgetItem(str(self._register_values[i]))
-            if self._write_func is None:
-                item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
+            item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
             self.setItem(i, 2, item)  # column 1 : value
 
     def get_register_values(self) -> list:
         return self._register_values
-
-    def _on_table_item_changed(self, item: QTableWidgetItem):
-        """
-        Is called when a data is change in the table.
-        :param item: TableItem that has changed
-        """
-        if item.column() == 2:  # Column value
-            """Checking value prompt by the user"""
-            try:
-                value = int(item.text())
-                if value < 0:
-                    value = 0
-                elif value > 1 and \
-                        (self._write_func == cst.WRITE_MULTIPLE_COILS or
-                         self._write_func == cst.WRITE_SINGLE_COIL):
-                    value = 1
-                elif value > 65535:
-                    value = 65535
-                self._register_values[item.row()] = value
-                item.setText(str(value))
-            except ValueError:
-                # if int parse fail then undo change
-                item.setText(str(self._register_values[item.row()]))
 
     def export_config(self) -> list:
         """
@@ -172,18 +157,3 @@ class RegisterTableWidget(QTableWidget):
             # column 1 : label
             item = QTableWidgetItem(str(labels[i]))
             self.setItem(i, 1, item)
-
-    class _Row:
-        """
-        Wrap that groups the content of a row
-        """
-        def __init__(self, addr=0, label="", value=0):
-            """
-            Constructor
-            :param addr: register address
-            :param label: label of the register
-            :param value: value of the register
-            """
-            self.register_addr = addr
-            self.label = label
-            self.register_value = value

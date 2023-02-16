@@ -46,6 +46,12 @@ class MainWindow(QMainWindow):
         self._ui = self._setup_ui()
         self._ui.status_bar.showMessage("Welcome")
 
+    def keyPressEvent(self, a0: QKeyEvent) -> None:
+        print(a0)
+        print(a0.key())
+        print(a0.text())
+        print(a0.type())
+
     def _open_settings_com(self):
         """Opens the communications configuration menu."""
         self._com_settings_win.show()

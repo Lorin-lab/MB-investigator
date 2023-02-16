@@ -21,6 +21,8 @@ import modbus_tk.defines as cst
 
 import range_ui
 import range_settings_win
+import write_win
+from register_row import RegisterRow as Row
 
 
 class RangeWin(QDockWidget):
@@ -51,12 +53,6 @@ class RangeWin(QDockWidget):
         """Is called when the new modbus configuration is validated. Update widgets"""
         # Update dock title
         self.setWindowTitle(self._settings.name)
-
-        # disable/enable Writing button
-        if self._settings.write_func is None:
-            self._ui.write_button.setDisabled(True)
-        else:
-            self._ui.write_button.setEnabled(True)
 
         # update table
         self._ui.table_widget.change_address_set(self._settings.starting_address,
@@ -98,7 +94,7 @@ class RangeWin(QDockWidget):
         except OSError as ex:
             self._ui.log_print(str(ex))
 
-    def _mb_writing_execute(self):
+    def _mb_writing_execute(self, register_row: Row):
         """Execute modbus writing function"""
 
         # Checking client
@@ -107,41 +103,26 @@ class RangeWin(QDockWidget):
             return
         # Checking available function
         if self._settings.write_func is None:
+            self._ui.log_print("No writing function available")
             return
         # Checking data
-        for i in self._ui.table_widget.get_register_values():
-            if i is None:
-                self._ui.log_print("Value none in data")
-                return
+        if register_row.register_value is None:
+            self._ui.log_print("Value none in data")
+            return
 
         try:
             data = self._ui.table_widget.get_register_values()
             # write data in one shot
-            if self._settings.write_func == cst.WRITE_MULTIPLE_COILS or \
-                    self._settings.write_func == cst.WRITE_MULTIPLE_REGISTERS:
-                self._ui.log_print("Writing...")
-                self.repaint()
-                feedback = self.modbus_client.execute(
-                    self._settings.unit_id,
-                    self._settings.write_func,
-                    self._settings.starting_address,
-                    output_value=data
-                )
-                self._ui.log_print("Successful writing")
-
-            # write data one by one
-            elif self._settings.write_func == cst.WRITE_SINGLE_COIL or \
-                    self._settings.write_func == cst.WRITE_SINGLE_REGISTER:
-                for i in range(len(data)):
-                    self._ui.log_print("Writing at address" + str(self._settings.starting_address + i))
-                    self.repaint()
-                    feedback = self.modbus_client.execute(
-                        self._settings.unit_id,
-                        self._settings.write_func,
-                        (self._settings.starting_address + i),
-                        output_value=data[i]
-                    )
-                    self._ui.log_print("Successful writing")
+            self._ui.log_print("Writing...")
+            self.repaint()
+            feedback = self.modbus_client.execute(
+                self._settings.unit_id,
+                self._settings.write_func,
+                register_row.register_addr,
+                output_value=register_row.register_value
+            )
+            self._ui.log_print("Successful writing")
+            self._ui.table_widget.set_row(register_row)
 
         except ModbusError as ex:
             error = ex.get_exception_code()
@@ -155,6 +136,13 @@ class RangeWin(QDockWidget):
                 self._ui.log_print("MB exception " + str(error) + ": Slave device failure")
         except OSError as ex:
             self._ui.log_print(str(ex))
+
+    def _on_table_cell_clicked(self, row: int, column: int):
+        if column == 2 and self._settings.write_func is not None:
+            self._write_dialog = write_win.WriteWin(self._ui.table_widget.get_row(row),
+                                                    self._settings.write_func,
+                                                    self._mb_writing_execute)
+            self._write_dialog.show()
 
     def export_config(self) -> dict:
         """
@@ -192,6 +180,6 @@ class RangeWin(QDockWidget):
         """Load widgets and connect them to function."""
         ui = range_ui.RangeUI(self)
         ui.read_button.clicked.connect(self._mb_reading_execute)
-        ui.write_button.clicked.connect(self._mb_writing_execute)
         ui.open_settings_btn.clicked.connect(self.open_settings)
+        ui.table_widget.cellClicked.connect(self._on_table_cell_clicked)
         return ui

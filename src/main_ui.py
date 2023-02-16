@@ -25,7 +25,7 @@ class MainWindowUI(object):
     """This class contains all the widgets and configures them for the main window."""
     def __init__(self, main_window):
         main_window.setWindowTitle('MB-Investigator')
-        main_window.resize(400, 500)
+        main_window.resize(500, 700)
 
         # ****************************
         # menu action bar

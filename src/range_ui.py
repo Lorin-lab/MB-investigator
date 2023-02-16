@@ -54,7 +54,7 @@ class RangeUI(object):
         # Status bar
         # ****************************
         self.plain_text_log = QPlainTextEdit()
-        self.plain_text_log.setFixedHeight(40)
+        self.plain_text_log.setFixedHeight(70)
         self.plain_text_log.setTextInteractionFlags(
             Qt.TextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |
                                     Qt.TextInteractionFlag.TextSelectableByKeyboard))

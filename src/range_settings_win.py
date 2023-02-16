@@ -44,16 +44,16 @@ class RangeSettingsUI(QMainWindow):
         self.unit_id = 1
         self.starting_address = 0
         self.quantity = 10
-        self.read_func = cst.READ_COILS
-        self.write_func = cst.WRITE_SINGLE_COIL
+        self.read_func = cst.READ_HOLDING_REGISTERS
+        self.write_func = cst.WRITE_SINGLE_REGISTER
 
         # UI setup
         self._ui = self._setup_ui()
 
         # setup read func combo box
-        self._ui.read_func_cb.add_option(cst.READ_COILS, "(FC01) Coils", set_as_current=True)
+        self._ui.read_func_cb.add_option(cst.READ_COILS, "(FC01) Coils")
         self._ui.read_func_cb.add_option(cst.READ_DISCRETE_INPUTS, "(FC02) Discrete input")
-        self._ui.read_func_cb.add_option(cst.READ_HOLDING_REGISTERS, "(FC03) Holding Registers")
+        self._ui.read_func_cb.add_option(cst.READ_HOLDING_REGISTERS, "(FC03) Holding Registers", set_as_current=True)
         self._ui.read_func_cb.add_option(cst.READ_INPUT_REGISTERS, "(FC04) Input Registers")
         self._on_read_func_cb_change(0)
 

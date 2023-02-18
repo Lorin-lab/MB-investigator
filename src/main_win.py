@@ -46,12 +46,6 @@ class MainWindow(QMainWindow):
         self._ui = self._setup_ui()
         self._ui.status_bar.showMessage("Welcome")
 
-    def keyPressEvent(self, a0: QKeyEvent) -> None:
-        print(a0)
-        print(a0.key())
-        print(a0.text())
-        print(a0.type())
-
     def _open_settings_com(self):
         """Opens the communications configuration menu."""
         self._com_settings_win.show()
@@ -246,6 +240,7 @@ class MainWindow(QMainWindow):
             for range_win_data in range_data_list:
                 # Create range
                 range_win = RangeWin(self, self._modbus_client)
+                range_win.set_close_callback(self._del_range_win)
                 new_range_win.append(range_win)
                 # import range data
                 range_win.import_config(range_win_data)

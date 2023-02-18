@@ -126,8 +126,8 @@ class RegisterTableWidget(QTableWidget):
         for i in range(self._quantity):
             # column 2 : value
             item = QTableWidgetItem(str(self._register_values[i]))
-            item.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-            self.setItem(i, 2, item)  # column 1 : value
+            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+            self.setItem(i, 2, item)  # column 2 : value
 
     def get_register_values(self) -> list:
         return self._register_values

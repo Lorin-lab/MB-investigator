@@ -1,5 +1,5 @@
 """
-Copyright 2022 Lorin Québatte
+Copyright 2022-2023 Lorin Québatte
 
 This file is part of MB-investigator.
 

@@ -29,22 +29,27 @@ class AboutUI(object):
         widget.setLayout(v_layout)
         main_window.setCentralWidget(widget)
 
-        # title
-        title = QLabel("MB-investigator")
-        title.setStyleSheet("QLabel {font-size: 20px;}")
-        v_layout.addWidget(title)
-
-        # Version
-        v_layout.addWidget(QLabel("Version: " + version.__VERSION__))
-
-        # Licence
-        v_layout.addWidget(QLabel("Licence: GNU General Public License Version 3"))
-
         # Source code link
         source_code_link = QLabel()
         source_code_link.setText(
+            f"<h1 style=\"font-size: 20px;\">MB-investigator v{version.__VERSION__}</h1>"
+            "<p>Copyright © 2022-2023 Lorin Québatte<ul>"
+            "<li>"
+            "Licence: "
+            "<a href=\"https://www.gnu.org/licenses/gpl-3.0.en.html\">GNU General Public License Version 3</a>"
+            "</li>"
+            "<li>"
             "Source code: "
             "<a href=\"https://github.com/Lorin-lab/MB-investigator\">https://github.com/Lorin-lab/MB-investigator</a>"
+            "</li>"
+            "</ul></p>"
+        
+            "<h2>Library</h2>"
+            "<p><ul>"
+            "<li><a href=\"https://github.com/ljean/modbus-tk\">Modbus-tk</a></li>"
+            "<li><a href=\"https://pypi.org/project/PyQt5/\">PyQt5</a></li>"
+            "<li><a href=\"https://github.com/google/material-design-icons\">Icons</a></li>"
+            "</ul></p>"
         )
         source_code_link.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         source_code_link.setOpenExternalLinks(True)

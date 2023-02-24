@@ -36,7 +36,7 @@ class ComSettingsWin(QMainWindow):
         self.timeout = 5.0
 
         # TCP Settings
-        self.ip = "127.0.0.1"
+        self.ip = "192.168.0.122"
         self.port = 502
 
         # RTU Settings

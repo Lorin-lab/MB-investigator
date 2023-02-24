@@ -17,11 +17,11 @@ see <https://www.gnu.org/licenses/>.
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QCloseEvent
 from modbus_tk.exceptions import *
-import modbus_tk.defines as cst
 
 import range_ui
 import range_settings_win
 import write_win
+from mb_regesiter_reader import MbRegisterReader
 from register_row import RegisterRow as Row
 
 
@@ -34,6 +34,8 @@ class RangeWin(QDockWidget):
     def __init__(self, parent, modbus_client):
         super(RangeWin, self).__init__("New range", parent)
         self.modbus_client = modbus_client
+
+        self._reading_thread = None
 
         # Instantiates the modbus parameters and their menu.
         self._settings = range_settings_win.RangeSettingsUI(self, self._on_settings_update)
@@ -61,38 +63,37 @@ class RangeWin(QDockWidget):
                                                  self._settings.write_func)
 
     def _mb_reading_execute(self):
-        """Execute modbus reading function"""
-        # Checking client
         if self.modbus_client is None:
             self._ui.log_print("Client not connected")
             return
 
-        self._ui.log_print("Reading...")
-        self.repaint()
+        if self._reading_thread is not None:  # not none when running
+            return
 
-        try:
-            # Reading data
-            datas = self.modbus_client.execute(
-                self._settings.unit_id,
-                self._settings.read_func,
-                self._settings.starting_address,
-                self._settings.quantity)
-            self._ui.table_widget.set_register_values(list(datas))
-            self._ui.log_print("Successful reading")
-        except ModbusError as ex:
-            error = ex.get_exception_code()
-            if error == 1:
-                self._ui.log_print("MB exception " + str(error) + ": Illegal Function")
-            if error == 2:
-                self._ui.log_print("MB exception " + str(error) + ": Illegal data address")
-            if error == 3:
-                self._ui.log_print("MB exception " + str(error) + ": Illegal data value")
-            if error == 4:
-                self._ui.log_print("MB exception " + str(error) + ": Slave device failure")
-        except ModbusInvalidResponseError as ex:
-            self._ui.log_print("Modbus invalid response exception: " + str(ex))
-        except OSError as ex:
-            self._ui.log_print(str(ex))
+        self._ui.read_button.setEnabled(False)
+
+        # Creating thread
+        self._reading_thread = MbRegisterReader(
+            self.modbus_client,
+            self._settings.unit_id,
+            self._settings.read_func,
+            self._settings.starting_address,
+            self._settings.quantity,
+            5000,
+            loop=self._ui.toggle_read_button.isChecked()
+        )
+
+        # Connect signal
+        self._reading_thread.finished.connect(self._reading_thread.deleteLater)
+        self._reading_thread.finished.connect(self._on_reading_finished)
+        self._reading_thread.log_progress.connect(self._ui.log_print)
+        self._reading_thread.success.connect(self._ui.table_widget.set_register_values)
+
+        self._reading_thread.start()
+
+    def _on_reading_finished(self):
+        self._ui.read_button.setEnabled(True)
+        self._reading_thread = None
 
     def _mb_writing_execute(self, register_row: Row):
         """Execute modbus writing function"""
@@ -111,7 +112,6 @@ class RangeWin(QDockWidget):
             return
 
         try:
-            data = self._ui.table_widget.get_register_values()
             # write data in one shot
             self._ui.log_print("Writing...")
             self.repaint()
@@ -174,7 +174,12 @@ class RangeWin(QDockWidget):
         self._close_event_callback_func = func
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        self._reading_thread.set_loop(False)
         self._close_event_callback_func(self)
+
+    def _on_reading_loop_toggle(self):
+        if self._reading_thread is not None:
+            self._reading_thread.set_loop(self._ui.toggle_read_button.isChecked())
 
     def _setup_ui(self):
         """Load widgets and connect them to function."""
@@ -182,4 +187,5 @@ class RangeWin(QDockWidget):
         ui.read_button.clicked.connect(self._mb_reading_execute)
         ui.open_settings_btn.clicked.connect(self.open_settings)
         ui.table_widget.cellClicked.connect(self._on_table_cell_clicked)
+        ui.toggle_read_button.clicked.connect(self._on_reading_loop_toggle)
         return ui

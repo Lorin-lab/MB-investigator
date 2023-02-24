@@ -20,6 +20,8 @@ from PyQt5.QtWidgets import *
 from datetime import datetime
 from custome_widgets.RegisterTableWidget import RegisterTableWidget
 
+from utils import *
+
 
 class RangeUI(object):
     """This class contains all the widgets and configures them for the addr range window."""
@@ -46,12 +48,18 @@ class RangeUI(object):
         self.read_button.setText("Read all")
         h_layout.addWidget(self.read_button)
 
-        self.open_settings_btn = QPushButton()
-        self.open_settings_btn.setText("Range parameters")
+        self.toggle_read_button = QCheckBox()
+        self.toggle_read_button.setText("Periodic reading")
+        self.toggle_read_button.setCheckable(True)
+        h_layout.addWidget(self.toggle_read_button)
+
+        self.open_settings_btn = QToolButton()
+        self.open_settings_btn.setIcon(QIcon(resource_path("icons/tune_FILL0_wght400_GRAD0_opsz48.svg")))
+        self.open_settings_btn.setToolTip("Range parameters")
         h_layout.addWidget(self.open_settings_btn)
 
         # ****************************
-        # Status bar
+        # plain text
         # ****************************
         self.plain_text_log = QPlainTextEdit()
         self.plain_text_log.setFixedHeight(70)

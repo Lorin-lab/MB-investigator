@@ -17,6 +17,7 @@ see <https://www.gnu.org/licenses/>.
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QCloseEvent
 from modbus_tk.exceptions import *
+from PyQt5.QtCore import pyqtSignal
 
 import range_ui
 import range_settings_win
@@ -30,6 +31,7 @@ class RangeWin(QDockWidget):
     All presented with a graphic interface.
     """
     range_counter = 0
+    closed_event = pyqtSignal(object)
 
     def __init__(self, parent, modbus_client):
         super(RangeWin, self).__init__("New range", parent)
@@ -170,12 +172,10 @@ class RangeWin(QDockWidget):
         # import label
         self._ui.table_widget.import_config(data.get("labels", None))
 
-    def set_close_callback(self, func):
-        self._close_event_callback_func = func
-
     def closeEvent(self, event: QCloseEvent) -> None:
-        self._reading_thread.set_loop(False)
-        self._close_event_callback_func(self)
+        if self._reading_thread is not None:
+            self._reading_thread.set_loop(False)
+        self.closed_event.emit(self)
 
     def _on_reading_loop_toggle(self):
         if self._reading_thread is not None:

@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
     def _add_range_win(self):
         """Adds modbus range."""
         range_win = RangeWin(self, self._modbus_client)
-        range_win.set_close_callback(self._del_range_win)
+        range_win.closed_event.connect(self._del_range_win)
         self._range_win_list.append(range_win)
 
         # Dock the range as tab
@@ -240,7 +240,7 @@ class MainWindow(QMainWindow):
             for range_win_data in range_data_list:
                 # Create range
                 range_win = RangeWin(self, self._modbus_client)
-                range_win.set_close_callback(self._del_range_win)
+                range_win.closed_event.connect(self._del_range_win)
                 new_range_win.append(range_win)
                 # import range data
                 range_win.import_config(range_win_data)

@@ -33,7 +33,7 @@ class ComSettingsUI(object):
         # ****************************
         self.mode_button_group = QButtonGroup()
 
-        self.button_mode_TCP = QRadioButton("TCP", main_window)
+        self.button_mode_TCP = QRadioButton("TCP, RTU over TCP", main_window)
         self.button_mode_TCP.setChecked(True)
         general_layout.addWidget(self.button_mode_TCP)
         self.mode_button_group.addButton(self.button_mode_TCP)
@@ -59,7 +59,7 @@ class ComSettingsUI(object):
         self.port_edit.setValidator(Validators.DecValidator(0, 65535))
 
         flo = QFormLayout()
-        flo.addRow("IP address", self.IP_edit)
+        flo.addRow("IP or Hostname", self.IP_edit)
         flo.addRow("Port", self.port_edit)
         tcp_group_layout.addLayout(flo)
 

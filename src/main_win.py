@@ -27,6 +27,7 @@ from datetime import datetime
 from com_settings_win import ComSettingsWin
 import main_ui
 import about_win
+from connection_thread import ConnectionThread
 from range_win import RangeWin
 import version
 
@@ -41,6 +42,8 @@ class MainWindow(QMainWindow):
         self._com_settings_win = ComSettingsWin(self, self._on_settings_update)
 
         self._modbus_client = None  # Modbus client
+        self._connection_thread = None
+        self._msgbox_connection = None
         self._range_win_list = []
 
         self._ui = self._setup_ui()
@@ -55,7 +58,7 @@ class MainWindow(QMainWindow):
         self._modbus_client = None  # New settings -> client not connected
         self._update_range_client_objet()
 
-    def _try_connect_client(self):
+    def _attempt_connect_client(self):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
 
         # TCP MODE
@@ -97,31 +100,52 @@ class MainWindow(QMainWindow):
             self._modbus_client = modbus_rtu.RtuMaster(serial_port)
             self._modbus_client.set_timeout(self._com_settings_win.timeout, True)
 
-        # Try connection
-        msg_box = QMessageBox()
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        try:
-            self._modbus_client.open()
-        except (OSError, serial.SerialException) as ex:
+        # Prepare msgbox
+        self._msgbox_connection = QMessageBox()
+        self._msgbox_connection.setStandardButtons(QMessageBox.Cancel)
+        self._msgbox_connection.setWindowTitle("Connection")
+        self._msgbox_connection.setText(f"Attempt to connect...")
+        self._msgbox_connection.setIcon(QMessageBox.Information)
+        self._msgbox_connection.finished.connect(self._on_connection_canceled)
+        # Prepare thread
+        self._connection_thread = ConnectionThread(self._modbus_client)
+        self._connection_thread.success.connect(self._on_connection_success)
+        self._connection_thread.fail.connect(self._on_connection_fail)
+        #self._connection_thread.terminate()
+        # Execute
+        self._connection_thread.start()
+        self._msgbox_connection.exec()
+
+    def _on_connection_canceled(self):
+        if not self._connection_thread.isFinished():
+            self._connection_thread.terminate()
+            print("connection cancel")
             self._modbus_client = None
 
-            msg_box.setWindowTitle("Fail to connect")
-            msg_box.setText(f"Fail to connect.\n\nException : {type(ex).__name__}.\n\n{ex}")
-            msg_box.setIcon(QMessageBox.Critical)
+    def _on_connection_success(self):
+        print("connection success")
+        if self._msgbox_connection is not None:
+            self._msgbox_connection.close()
 
-            self._ui.status_bar.showMessage("Fail to connect.")
-            print("Fail to connect.")
-        else:
-            self._update_range_client_objet()
+        msg_box = QMessageBox()
+        msg_box.setDefaultButton(QMessageBox.Ok)
+        msg_box.setWindowTitle("Success")
+        msg_box.setText("Successfully connected.")
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.exec()
 
-            msg_box.setWindowTitle("Success")
-            msg_box.setText("Successfully connected.")
-            msg_box.setIcon(QMessageBox.Information)
+    def _on_connection_fail(self, ex):
+        print("connection fail")
+        if self._msgbox_connection is not None:
+            self._msgbox_connection.close()
+        self._modbus_client = None
 
-            self._ui.status_bar.showMessage("Connected.")
-            print("Connected.")
-        finally:
-            msg_box.exec()
+        msg_box = QMessageBox()
+        msg_box.setDefaultButton(QMessageBox.Ok)
+        msg_box.setWindowTitle("Fail to connect")
+        msg_box.setText(f"Fail to connect.\n\nException : {type(ex).__name__}.\n\n{ex}")
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.exec()
 
     def _try_disconnect_client(self):
         """Disconnect the modbus client"""
@@ -277,7 +301,7 @@ class MainWindow(QMainWindow):
 
         # toolbar
         ui.client_config_tool_btn.clicked.connect(self._open_settings_com)
-        ui.connect_tool_btn.clicked.connect(self._try_connect_client)
+        ui.connect_tool_btn.clicked.connect(self._attempt_connect_client)
         ui.disconnect_tool_btn.clicked.connect(self._try_disconnect_client)
         ui.Add_section_tool_btn.clicked.connect(self._add_range_win)
 
@@ -288,7 +312,7 @@ class MainWindow(QMainWindow):
         ui.action_export_config.triggered.connect(self._export_config)
         ui.action_quit.triggered.connect(self.close)
         ui.action_settings_com.triggered.connect(self._open_settings_com)
-        ui.action_open_com.triggered.connect(self._try_connect_client)
+        ui.action_open_com.triggered.connect(self._attempt_connect_client)
         ui.action_close_com.triggered.connect(self._try_disconnect_client)
         ui.action_add_range.triggered.connect(self._add_range_win)
         return ui

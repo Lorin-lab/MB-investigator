@@ -53,10 +53,12 @@ class MainWindow(QMainWindow):
         """Opens the communications configuration menu."""
         self._com_settings_win.show()
 
-    def _on_settings_update(self):
+    def _on_settings_update(self, auto_connect: bool = False):
         """Is called when the new communications configuration is validated"""
         self._modbus_client = None  # New settings -> client not connected
         self._update_range_client_objet()
+        if auto_connect:
+            self._attempt_connect_client()
 
     def _attempt_connect_client(self):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""

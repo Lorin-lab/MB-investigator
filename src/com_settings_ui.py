@@ -108,11 +108,16 @@ class ComSettingsUI(object):
         h_layout = QHBoxLayout()
         general_layout.addLayout(h_layout)
 
-        self.valid_button = QPushButton()
-        self.valid_button.setText("Validation")
-        h_layout.addWidget(self.valid_button)
-
         self.cancel_button = QPushButton()
         self.cancel_button.setText("Cancel")
         self.cancel_button.setStyleSheet("background-color : red")
         h_layout.addWidget(self.cancel_button)
+
+        self.apply_button = QPushButton()
+        self.apply_button.setText("Apply")
+        h_layout.addWidget(self.apply_button)
+
+        self.apply_connect_button = QPushButton()
+        self.apply_connect_button.setText("Apply and connect")
+        self.apply_connect_button.setDefault(True)
+        h_layout.addWidget(self.apply_connect_button)

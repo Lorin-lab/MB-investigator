@@ -97,6 +97,16 @@ class ComSettingsWin(QMainWindow):
         else:
             self._ui.serial_port_name_cb.add_option(None, "None found")
 
+    def _on_apply_button(self):
+        self._validation()
+        self.close()
+        self._call_back_func()
+
+    def _on_apply_and_connect_button(self):
+        self._validation()
+        self.close()
+        self._call_back_func(True)
+
     def _validation(self):
         """save the settings close the menu and call the 'call back' function"""
         # General settings
@@ -118,8 +128,6 @@ class ComSettingsWin(QMainWindow):
         self.stop_bits = self._ui.stop_bits_cb.get_current_option_value()
         self.flow_control = self._ui.flow_control_cb.get_current_option_value()
 
-        self.close()
-        self._call_back_func()
 
     def _cancel(self):
         """Reset widget with actual settings and close the menu"""
@@ -221,7 +229,8 @@ class ComSettingsWin(QMainWindow):
         ui.IP_edit.setText(self.ip)
 
         # Buttons
-        ui.valid_button.clicked.connect(self._validation)
+        ui.apply_button.clicked.connect(self._on_apply_button)
+        ui.apply_connect_button.clicked.connect(self._on_apply_and_connect_button)
         ui.cancel_button.clicked.connect(self._cancel)
 
         return ui

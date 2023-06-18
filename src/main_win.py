@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
         print("connection success")
         if self._msgbox_connection is not None:
             self._msgbox_connection.close()
+        self._update_range_client_objet()
 
         msg_box = QMessageBox()
         msg_box.setDefaultButton(QMessageBox.Ok)

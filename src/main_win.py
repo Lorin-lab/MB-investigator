@@ -63,12 +63,13 @@ class MainWindow(QMainWindow):
     def _attempt_connect_client(self):
         """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
 
+        msg = ""
         # TCP MODE
         if self._com_settings_win.mode == ComSettingsWin.MbMode.TCP:
             # print message
-            text = f"Attempt to connecting to {self._com_settings_win.ip} ..."
-            print(text)
-            self._ui.status_bar.showMessage(text)
+            msg = f"Attempt to connecting to {self._com_settings_win.ip} ..."
+            print(msg)
+            self._ui.status_bar.showMessage(msg)
             self.repaint()
 
             # setup client
@@ -82,9 +83,9 @@ class MainWindow(QMainWindow):
         if self._com_settings_win.mode == ComSettingsWin.MbMode.RTU:
 
             # Print message
-            text = f"Attempt to opening {self._com_settings_win.serial_port_name} ..."
-            print(text)
-            self._ui.status_bar.showMessage(text)
+            msg = f"Attempt to opening {self._com_settings_win.serial_port_name} ..."
+            print(msg)
+            self._ui.status_bar.showMessage(msg)
             self.repaint()
 
             # setup client
@@ -106,14 +107,13 @@ class MainWindow(QMainWindow):
         self._msgbox_connection = QMessageBox()
         self._msgbox_connection.setStandardButtons(QMessageBox.Cancel)
         self._msgbox_connection.setWindowTitle("Connection")
-        self._msgbox_connection.setText(f"Attempt to connect...")
+        self._msgbox_connection.setText(msg)
         self._msgbox_connection.setIcon(QMessageBox.Information)
         self._msgbox_connection.finished.connect(self._on_connection_canceled)
         # Prepare thread
         self._connection_thread = ConnectionThread(self._modbus_client)
         self._connection_thread.success.connect(self._on_connection_success)
         self._connection_thread.fail.connect(self._on_connection_fail)
-        #self._connection_thread.terminate()
         # Execute
         self._connection_thread.start()
         self._msgbox_connection.exec()

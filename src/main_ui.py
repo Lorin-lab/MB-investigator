@@ -36,30 +36,36 @@ class MainWindowUI(object):
         # file menu
         self.action_import_config = QAction("Import config", main_window)
         self.action_export_config = QAction("Export config", main_window)
-        self.action_about = QAction("About", main_window)
         self.action_quit = QAction("Quit", main_window)
 
         file_menu = menu_bar.addMenu('File')
         file_menu.addAction(self.action_import_config)
         file_menu.addAction(self.action_export_config)
-        file_menu.addAction(self.action_about)
         file_menu.addAction(self.action_quit)
 
         # Communication settings
-        self.action_settings_com = QAction("Settings", main_window)
-        self.action_open_com = QAction("Open/Connect", main_window)
-        self.action_close_com = QAction("Close/Disconnect", main_window)
+        self.action_settings_com = QAction("Communication settings", main_window)
+        self.action_open_com = QAction("Open connection", main_window)
+        self.action_close_com = QAction("Close connection", main_window)
 
-        com_menu = menu_bar.addMenu('Communication')
+        com_menu = menu_bar.addMenu('Remote device')
         com_menu.addAction(self.action_settings_com)
         com_menu.addAction(self.action_open_com)
         com_menu.addAction(self.action_close_com)
 
         # Ranges
-        self.action_add_range = QAction("Add Range", main_window)
+        self.action_add_range = QAction("Add variable", main_window)
 
-        range_menu = menu_bar.addMenu('Range')
+        range_menu = menu_bar.addMenu('Variable')
         range_menu.addAction(self.action_add_range)
+
+        # Ranges
+        self.action_about = QAction("About", main_window)
+        self.action_open_manual = QAction("Online manual", main_window)
+
+        help_menu = menu_bar.addMenu('Help')
+        help_menu.addAction(self.action_about)
+        help_menu.addAction(self.action_open_manual)
 
         # ****************************
         # Status bar

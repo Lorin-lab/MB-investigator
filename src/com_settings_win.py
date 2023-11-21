@@ -159,9 +159,9 @@ class ComSettingsWin(QMainWindow):
 
     def _on_mode_changed(self):
         """Is called when communication mode is changed"""
-        is_tcp = self._ui.button_mode_TCP.isChecked()
-        self._ui.tcp_group_box.setDisabled(not is_tcp)
-        self._ui.rtu_group_box.setDisabled(is_tcp)
+        is_rtu = self._ui.button_mode_RTU.isChecked()
+        self._ui.tcp_group_box.setDisabled(is_rtu)
+        self._ui.rtu_group_box.setDisabled(not is_rtu)
 
     def export_config(self) -> dict:
         """
@@ -222,7 +222,7 @@ class ComSettingsWin(QMainWindow):
 
         # general settings
         ui.mode_button_group.idClicked.connect(self._on_mode_changed)
-        ui.timeout.setText(str(self.timeout))
+        #ui.timeout.setText(str(self.timeout))
 
         # TCP settings
         ui.port_edit.setText(str(self.port))

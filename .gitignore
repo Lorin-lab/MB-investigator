@@ -1,6 +1,8 @@
+*.json
 # pycharm directory
 venv/
 .idea/
+__pycache__/
 # pyinstaller directory
 build/
 dist/

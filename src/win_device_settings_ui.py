@@ -20,7 +20,7 @@ from custome_widgets.QCustomComboBox import QCustomComboBox
 import custome_widgets.CustomQValidators as Validators
 
 
-class ComSettingsUI(object):
+class WinDeviceSettingsUI(object):
     """This class contains all the widgets and configures them for the communications configuration menu."""
     def __init__(self, main_window):
         general_layout = QVBoxLayout()
@@ -29,7 +29,7 @@ class ComSettingsUI(object):
         main_window.setCentralWidget(widget)
 
         # ****************************
-        # Modbus settings
+        # General settings
         # ****************************
         other_group_box = QGroupBox("General")
         general_layout.addWidget(other_group_box)
@@ -117,7 +117,7 @@ class ComSettingsUI(object):
 
         # connection timeout
         self.tcp_connection_timeout = QLineEdit()
-        self.tcp_connection_timeout.setValidator(Validators.FloatValidator(0.0, 60.0))
+        self.tcp_connection_timeout.setValidator(Validators.DecValidator(1, 60))
 
         flo = QFormLayout()
         flo.addRow("IPv4 (ipv6?) or Hostname", self.IP_edit)
@@ -165,6 +165,6 @@ class ComSettingsUI(object):
         h_layout.addWidget(self.apply_button)
 
         self.apply_connect_button = QPushButton()
-        self.apply_connect_button.setText("Apply and connect")
+        self.apply_connect_button.setText("Apply and open connection")
         self.apply_connect_button.setDefault(True)
         h_layout.addWidget(self.apply_connect_button)

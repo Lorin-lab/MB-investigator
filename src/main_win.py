@@ -24,12 +24,13 @@ import serial
 import json
 from datetime import datetime
 
-from com_settings_win import ComSettingsWin
+from win_device_settings import WinDeviceSettings
 import main_ui
 import about_win
 from connection_thread import ConnectionThread
 from range_win import RangeWin
 import version
+from data_models.remote_device import RemoteDevice
 
 
 class MainWindow(QMainWindow):
@@ -39,19 +40,20 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         # Instantiates the communication parameters and their menu.
-        self._com_settings_win = ComSettingsWin(self, self._on_settings_update)
+        self._com_settings_win = WinDeviceSettings(self, self._on_settings_update)
 
         self._modbus_client = None  # Modbus client
         self._connection_thread = None
         self._msgbox_connection = None
         self._range_win_list = []
+        self._remote_device = RemoteDevice()
 
         self._ui = self._setup_ui()
         self._ui.status_bar.showMessage("Welcome")
 
     def _open_settings_com(self):
         """Opens the communications configuration menu."""
-        self._com_settings_win.show()
+        self._com_settings_win.open_device(self._remote_device)
 
     def _on_settings_update(self, auto_connect: bool = False):
         """Is called when the new communications configuration is validated"""
@@ -65,7 +67,7 @@ class MainWindow(QMainWindow):
 
         msg = ""
         # TCP MODE
-        if self._com_settings_win.mode == ComSettingsWin.MbMode.TCP:
+        if self._com_settings_win.mode == WinDeviceSettings.MbMode.TCP:
             # print message
             msg = f"Attempt to connecting to {self._com_settings_win.ip} ..."
             print(msg)
@@ -80,7 +82,7 @@ class MainWindow(QMainWindow):
             )
 
         # RTU MODE
-        if self._com_settings_win.mode == ComSettingsWin.MbMode.RTU:
+        if self._com_settings_win.mode == WinDeviceSettings.MbMode.RTU:
 
             # Print message
             msg = f"Attempt to opening {self._com_settings_win.serial_port_name} ..."
@@ -95,9 +97,9 @@ class MainWindow(QMainWindow):
                 bytesize=self._com_settings_win.data_bits,
                 parity=self._com_settings_win.parity,
                 stopbits=self._com_settings_win.stop_bits,
-                xonxoff=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.XON_XOFF),
-                rtscts=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.RTS_CTS),
-                dsrdtr=(self._com_settings_win.flow_control == ComSettingsWin.FlowControl.DSR_DTR)
+                xonxoff=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.XON_XOFF),
+                rtscts=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.RTS_CTS),
+                dsrdtr=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.DSR_DTR)
             )
             serial_port.port = self._com_settings_win.serial_port_name
             self._modbus_client = modbus_rtu.RtuMaster(serial_port)
@@ -210,7 +212,7 @@ class MainWindow(QMainWindow):
         com_settings_data = self._com_settings_win.export_config()
         range_data_list = []
         for range_win in self._range_win_list:
-            range_data_list.append(range_win.export_config())
+            range_data_list.append(range_win.json_serialize())
 
         data = {
             "export_date": str(datetime.now()),

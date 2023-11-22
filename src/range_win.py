@@ -154,7 +154,7 @@ class RangeWin(QDockWidget):
         """
         config = {
             "settings": self._settings.export_config(),
-            "labels": self._ui.table_widget.export_config()
+            "labels": self._ui.table_widget.json_serialize()
         }
         return config
 
@@ -170,7 +170,7 @@ class RangeWin(QDockWidget):
         self._settings.import_config(data.get("settings", None))
 
         # import label
-        self._ui.table_widget.import_config(data.get("labels", None))
+        self._ui.table_widget.json_deserialize(data.get("labels", None))
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if self._reading_thread is not None:

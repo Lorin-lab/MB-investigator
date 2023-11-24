@@ -19,13 +19,35 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 from utils import *
+import version
 
 
 class MainWindowUI(object):
     """This class contains all the widgets and configures them for the main window."""
-    def __init__(self, main_window):
-        main_window.setWindowTitle('MB-Investigator')
-        main_window.resize(500, 700)
+    def __init__(self, main_window: QMainWindow):
+        main_window.setWindowTitle(f'MB-Investigator {version.__VERSION__}')
+        main_window.resize(750, 600)
+        self.tabs_widget = QTabWidget()
+        main_window.setCentralWidget(self.tabs_widget)
+
+        # ****************************
+        # Tabs
+        # ****************************
+
+        tabs_name = ["Holding Registers", "Input Registers", "Coils", "Discrete input"]
+        for name in tabs_name:
+            widget = QWidget()
+            layout = QVBoxLayout()
+            widget.setLayout(layout)
+            table = QTableWidget()
+            layout.addWidget(table)
+
+            table.setColumnCount(5)
+            table.setRowCount(10)
+            table.setHorizontalHeaderLabels(["Address", "Label", "Value", "Status", "Action"])
+
+            self.tabs_widget.addTab(widget, name)
+
 
         # ****************************
         # menu action bar
@@ -44,22 +66,19 @@ class MainWindowUI(object):
         file_menu.addAction(self.action_quit)
 
         # Communication settings
-        self.action_settings_com = QAction("Communication settings", main_window)
+        self.action_settings_device = QAction("Communication settings", main_window)
+        self.action_settings_device.setIcon(QIcon(resource_path("icons/outline_settings_black_24dp.png")))
         self.action_open_com = QAction("Open connection", main_window)
+        self.action_open_com.setIcon(QIcon(resource_path("icons/outline_link_black_24dp.png")))
         self.action_close_com = QAction("Close connection", main_window)
+        self.action_close_com.setIcon(QIcon(resource_path("icons/outline_link_off_black_24dp.png")))
 
         com_menu = menu_bar.addMenu('Remote device')
-        com_menu.addAction(self.action_settings_com)
+        com_menu.addAction(self.action_settings_device)
         com_menu.addAction(self.action_open_com)
         com_menu.addAction(self.action_close_com)
 
-        # Ranges
-        self.action_add_range = QAction("Add variable", main_window)
-
-        range_menu = menu_bar.addMenu('Variable')
-        range_menu.addAction(self.action_add_range)
-
-        # Ranges
+        # Help
         self.action_about = QAction("About", main_window)
         self.action_open_manual = QAction("Online manual", main_window)
 
@@ -79,29 +98,23 @@ class MainWindowUI(object):
         self.toolbar = QToolBar(main_window)
         main_window.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
         # config button
-        self.client_config_tool_btn = QToolButton()
-        self.client_config_tool_btn.setAutoRaise(True)
-        self.client_config_tool_btn.setIcon(QIcon(resource_path("icons/outline_settings_black_24dp.png")))
-        self.client_config_tool_btn.setToolTip("Communication settings")
-        self.toolbar.addWidget(self.client_config_tool_btn)
+        self.device_config_tool_btn = QToolButton()
+        self.device_config_tool_btn.setAutoRaise(True)
+        self.device_config_tool_btn.setIcon(QIcon(resource_path("icons/outline_settings_black_24dp.png")))
+        self.device_config_tool_btn.setToolTip("Communication settings")
+        self.toolbar.addWidget(self.device_config_tool_btn)
 
         # connect button
         self.connect_tool_btn = QToolButton()
         self.connect_tool_btn.setAutoRaise(True)
         self.connect_tool_btn.setIcon(QIcon(resource_path("icons/outline_link_black_24dp.png")))
-        self.connect_tool_btn.setToolTip("Open/Connect")
+        self.connect_tool_btn.setToolTip("Open connection")
         self.toolbar.addWidget(self.connect_tool_btn)
 
         # disconnect button
         self.disconnect_tool_btn = QToolButton()
         self.disconnect_tool_btn.setAutoRaise(True)
         self.disconnect_tool_btn.setIcon(QIcon(resource_path("icons/outline_link_off_black_24dp.png")))
-        self.disconnect_tool_btn.setToolTip("Close/Disconnect")
+        self.disconnect_tool_btn.setToolTip("Close connection")
         self.toolbar.addWidget(self.disconnect_tool_btn)
 
-        # Add com range button
-        self.Add_section_tool_btn = QToolButton()
-        self.Add_section_tool_btn.setAutoRaise(True)
-        self.Add_section_tool_btn.setIcon(QIcon(resource_path("icons/outline_add_box_black_24dp.png")))
-        self.Add_section_tool_btn.setToolTip("Add range")
-        self.toolbar.addWidget(self.Add_section_tool_btn)

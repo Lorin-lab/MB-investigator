@@ -14,32 +14,32 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
-
+from __future__ import annotations  # for that RemoteDevice recognize as type hint
 import serial
+from modbus_tk import modbus_tcp, modbus_rtu, modbus
 
 
 class RemoteDevice:
     """
     A remote device
     """
+
     def __init__(self):
+        self.modbus_client = None
+
         # General settings
         self.name = "new device"
-
         # Modbus settings
         self.unit_id = 1
         self.reading_period = 1000
         self.reading_timeout = 2
         self.mb_writing_preference = self.WritingPreference.SINGLE
-
         # Communication Settings
         self.com_mode = self.ComMode.TCP
-
         # TCP Settings
         self.ip = "127.0.0.1"
         self.port = 502
         self.tcp_timeout = 5
-
         # RTU Settings
         self.serial_port_name = ""
         self.baud_rate = 9600
@@ -48,7 +48,58 @@ class RemoteDevice:
         self.stop_bits = serial.STOPBITS_ONE
         self.flow_control = self.FlowControl.NONE
 
-    def json_serialize(self) -> dict:
+    def open_connection(self) -> None:
+        """
+        Open the connection to the remote device
+        :return: None
+        """
+        if self.modbus_client is None:
+            self.modbus_client = self.get_modbus_client(self, self)
+        self.modbus_client.open()
+
+    def close_connection(self) -> None:
+        """
+        Close the connection to the remote device
+        :return: None
+        """
+        if self.modbus_client is not None:
+            self.modbus_client.close()
+        self.modbus_client = None
+
+    @staticmethod
+    def get_modbus_client(self, device: RemoteDevice) -> modbus.Master:
+        """
+        Provides a modbus client configured according to the remote device passed as parameter
+        :param self: ...
+        :param device: the remote device
+        :return: A modbus client configured
+        """
+        client = None
+        # TCP and RTU over TCP
+        if device.com_mode == RemoteDevice.ComMode.TCP or device.com_mode == RemoteDevice.ComMode.RTU_OVER_TCP:
+            client = modbus_tcp.TcpMaster(
+                device.ip,
+                device.port,
+                float(device.tcp_timeout)
+            )
+        # RTU MODE
+        elif device.com_mode == RemoteDevice.ComMode.RTU:
+            serial_port = serial.Serial(
+                port=None,  # Set null to avoid automatic opening
+                baudrate=device.baud_rate,
+                bytesize=device.data_bits,
+                parity=device.parity,
+                stopbits=device.stop_bits,
+                xonxoff=(device.flow_control == RemoteDevice.FlowControl.XON_XOFF),
+                rtscts=(device.flow_control == RemoteDevice.FlowControl.RTS_CTS),
+                dsrdtr=(device.flow_control == RemoteDevice.FlowControl.DSR_DTR)
+            )
+            serial_port.port = device.serial_port_name
+            client = modbus_rtu.RtuMaster(serial_port)
+
+        return client
+
+    def serialize(self) -> dict:
         """
         Export configuration
         :return: Return parameters into a dictionary.
@@ -77,7 +128,7 @@ class RemoteDevice:
         }
         return data
 
-    def json_deserialize(self, data: dict):
+    def deserialize(self, data: dict):
         """
         Import data
         :param data: Dict that contains parameters to be imported.
@@ -123,4 +174,3 @@ class RemoteDevice:
         """Enum of writing function type preference"""
         SINGLE = 0
         MULTIPLE = 1
-

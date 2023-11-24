@@ -22,23 +22,25 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from modbus_tk.exceptions import *
 import modbus_tk.defines as cst
 
+from data_models.remote_device import RemoteDevice
+
 
 class ConnectionThread(QThread):
     # pyqtSignal should be not in the __init__ !
-    success = pyqtSignal()
-    fail = pyqtSignal(Exception)
+    success_sig = pyqtSignal()
+    fail_sig = pyqtSignal(Exception)
 
-    def __init__(self, modbus_client: modbus_tk.modbus.Master):
+    def __init__(self, remote_device: RemoteDevice):
         super(ConnectionThread, self).__init__()
-        self.modbus_client = modbus_client
+        self.modbus_client = remote_device
 
     def run(self):
         try:
-            self.modbus_client.open()
+            self.modbus_client.open_connection()
         except (Exception) as ex:
-            self.fail.emit(ex)
+            self.fail_sig.emit(ex)
         else:
-            self.success.emit()
+            self.success_sig.emit()
         finally:
             self.deleteLater()
 

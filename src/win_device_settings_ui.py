@@ -61,13 +61,13 @@ class WinDeviceSettingsUI(object):
         self.reading_period.setValidator(Validators.DecValidator(10, 60000))
 
         self.read_timeout = QLineEdit()
-        self.read_timeout.setValidator(Validators.FloatValidator(0.0, 60.0))
+        self.read_timeout.setValidator(Validators.DecValidator(0, 60))
 
         # write function list
         self.write_func_cb = QCustomComboBox()
 
         flo = QFormLayout()
-        flo.addRow("Unit ID (0?)", self.unit_id)
+        flo.addRow("Unit ID", self.unit_id)
         flo.addRow("Reading period (ms)", self.reading_period)
         flo.addRow("Read timeout (s)", self.read_timeout)
         flo.addRow("Writing function", self.write_func_cb)
@@ -120,7 +120,7 @@ class WinDeviceSettingsUI(object):
         self.tcp_connection_timeout.setValidator(Validators.DecValidator(1, 60))
 
         flo = QFormLayout()
-        flo.addRow("IPv4 (ipv6?) or Hostname", self.IP_edit)
+        flo.addRow("IPv4 or Hostname", self.IP_edit)
         flo.addRow("Port", self.port_edit)
         flo.addRow("Connection timeout (s)", self.tcp_connection_timeout)
         tcp_group_layout.addLayout(flo)

@@ -16,13 +16,14 @@ see <https://www.gnu.org/licenses/>.
 """
 
 import sys
+from socket import timeout
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from modbus_tk import modbus_tcp, modbus_rtu
-import serial
 import json
 from datetime import datetime
+
+from serial import SerialException
 
 from win_device_settings import WinDeviceSettings
 import main_ui
@@ -39,71 +40,39 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        # Instantiates the communication parameters and their menu.
-        self._com_settings_win = WinDeviceSettings(self, self._on_settings_update)
+        # Setup device settings window
+        self._device_settings_win = WinDeviceSettings(self, self._on_settings_update)
 
-        self._modbus_client = None  # Modbus client
+        self._remote_device = RemoteDevice()  # device configuration
         self._connection_thread = None
         self._msgbox_connection = None
-        self._range_win_list = []
-        self._remote_device = RemoteDevice()
 
         self._ui = self._setup_ui()
         self._ui.status_bar.showMessage("Welcome")
 
     def _open_settings_com(self):
         """Opens the communications configuration menu."""
-        self._com_settings_win.open_device(self._remote_device)
+        self._device_settings_win.open_device(self._remote_device)
 
     def _on_settings_update(self, auto_connect: bool = False):
         """Is called when the new communications configuration is validated"""
         self._modbus_client = None  # New settings -> client not connected
-        self._update_range_client_objet()
         if auto_connect:
             self._attempt_connect_client()
 
     def _attempt_connect_client(self):
-        """Try to connect the modbus client. To the server via TCP, or opening the serial port."""
-
+        """Try to open connection to the remote device"""
         msg = ""
         # TCP MODE
-        if self._com_settings_win.mode == WinDeviceSettings.MbMode.TCP:
-            # print message
-            msg = f"Attempt to connecting to {self._com_settings_win.ip} ..."
-            print(msg)
-            self._ui.status_bar.showMessage(msg)
-            self.repaint()
+        if self._remote_device.com_mode == RemoteDevice.ComMode.TCP \
+                or self._remote_device.com_mode == RemoteDevice.ComMode.RTU_OVER_TCP:
+            msg = f"Attempt to connecting to {self._remote_device.ip} ..."
+        elif self._remote_device.com_mode == RemoteDevice.ComMode.RTU:
+            msg = f"Attempt to opening {self._remote_device.serial_port_name} ..."
 
-            # setup client
-            self._modbus_client = modbus_tcp.TcpMaster(
-                self._com_settings_win.ip,
-                self._com_settings_win.port,
-                self._com_settings_win.timeout
-            )
-
-        # RTU MODE
-        if self._com_settings_win.mode == WinDeviceSettings.MbMode.RTU:
-
-            # Print message
-            msg = f"Attempt to opening {self._com_settings_win.serial_port_name} ..."
-            print(msg)
-            self._ui.status_bar.showMessage(msg)
-            self.repaint()
-
-            # setup client
-            serial_port = serial.Serial(
-                port=None,  # Set null to avoid automatic opening
-                baudrate=self._com_settings_win.baud_rate,
-                bytesize=self._com_settings_win.data_bits,
-                parity=self._com_settings_win.parity,
-                stopbits=self._com_settings_win.stop_bits,
-                xonxoff=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.XON_XOFF),
-                rtscts=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.RTS_CTS),
-                dsrdtr=(self._com_settings_win.flow_control == WinDeviceSettings.FlowControl.DSR_DTR)
-            )
-            serial_port.port = self._com_settings_win.serial_port_name
-            self._modbus_client = modbus_rtu.RtuMaster(serial_port)
-            self._modbus_client.set_timeout(self._com_settings_win.timeout, True)
+        print(msg)
+        self._ui.status_bar.showMessage(msg)
+        self.repaint()
 
         # Prepare msgbox
         self._msgbox_connection = QMessageBox()
@@ -113,9 +82,9 @@ class MainWindow(QMainWindow):
         self._msgbox_connection.setIcon(QMessageBox.Information)
         self._msgbox_connection.finished.connect(self._on_connection_canceled)
         # Prepare thread
-        self._connection_thread = ConnectionThread(self._modbus_client)
-        self._connection_thread.success.connect(self._on_connection_success)
-        self._connection_thread.fail.connect(self._on_connection_fail)
+        self._connection_thread = ConnectionThread(self._remote_device)
+        self._connection_thread.success_sig.connect(self._on_connection_success)
+        self._connection_thread.fail_sig.connect(self._on_connection_fail)
         # Execute
         self._connection_thread.start()
         self._msgbox_connection.exec()
@@ -127,28 +96,39 @@ class MainWindow(QMainWindow):
             self._modbus_client = None
 
     def _on_connection_success(self):
-        print("connection success")
+        print("Connection opened successfully.")
         if self._msgbox_connection is not None:
             self._msgbox_connection.close()
         self._update_range_client_objet()
 
         msg_box = QMessageBox()
         msg_box.setDefaultButton(QMessageBox.Ok)
-        msg_box.setWindowTitle("Success")
-        msg_box.setText("Successfully connected.")
+        msg_box.setWindowTitle("Connection opened successfully.")
+        msg_box.setText("Connection opened successfully.")
         msg_box.setIcon(QMessageBox.Information)
         msg_box.exec()
 
-    def _on_connection_fail(self, ex):
-        print("connection fail")
+    def _on_connection_fail(self, ex: Exception):
+        print("Connection failed")
         if self._msgbox_connection is not None:
             self._msgbox_connection.close()
         self._modbus_client = None
 
+        # Build error message
+        msg = f"The connection failed because an unknown exception occurred.\n\nException: {type(ex).__name__}\nDetails: {ex}"
+        if type(ex) is ConnectionRefusedError:
+            msg = f"The remote device has refused the connection.\n{ex}"
+        elif type(ex) is ConnectionResetError:
+            msg = f"The remote device has reset the connection.\n{ex}"
+        elif type(ex) is timeout:
+            msg = f"Timeout Reached."
+        elif type(ex) is SerialException:
+            msg = f"The serial port cannot be opened.\n{ex}"
+
         msg_box = QMessageBox()
         msg_box.setDefaultButton(QMessageBox.Ok)
-        msg_box.setWindowTitle("Fail to connect")
-        msg_box.setText(f"Fail to connect.\n\nException : {type(ex).__name__}.\n\n{ex}")
+        msg_box.setWindowTitle("Connection failed")
+        msg_box.setText(msg)
         msg_box.setIcon(QMessageBox.Critical)
         msg_box.exec()
 
@@ -164,37 +144,6 @@ class MainWindow(QMainWindow):
         self._update_range_client_objet()
         self._ui.status_bar.showMessage("Disconnected.")
 
-    def _add_range_win(self):
-        """Adds modbus range."""
-        range_win = RangeWin(self, self._modbus_client)
-        range_win.closed_event.connect(self._del_range_win)
-        self._range_win_list.append(range_win)
-
-        # Dock the range as tab
-        self.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, range_win)
-        if len(self._range_win_list) > 1:
-            self.tabifyDockWidget(self._range_win_list[0], range_win)
-            range_win.show()
-            range_win.raise_()  # show + raise : move tab to the front
-
-        # open settings
-        range_win.open_settings()
-
-    def _del_range_win(self, range_win: RangeWin):
-        """
-        Delete range window. Use for range window self delete
-        :param range_win: range to delete
-        """
-        try:
-            self._range_win_list.remove(range_win)
-        except ValueError:
-            pass
-
-    def _update_range_client_objet(self):
-        """Updates the modbus client object for each modbus range."""
-        for addr_range in self._range_win_list:
-            addr_range.modbus_client = self._modbus_client
-
     def _export_config(self):
         """Export configuration"""
 
@@ -209,7 +158,7 @@ class MainWindow(QMainWindow):
             return
 
         # Prepare data
-        com_settings_data = self._com_settings_win.export_config()
+        com_settings_data = self._remote_device.serialize()
         range_data_list = []
         for range_win in self._range_win_list:
             range_data_list.append(range_win.json_serialize())
@@ -257,7 +206,7 @@ class MainWindow(QMainWindow):
             file_objet.close()
 
             # import com settings
-            self._com_settings_win.import_config(data.get("com_settings", None))
+            self._remote_device.deserialize(data.get("com_settings", None))
 
             # import new range
             new_range_win = []
@@ -305,10 +254,9 @@ class MainWindow(QMainWindow):
         ui = main_ui.MainWindowUI(self)
 
         # toolbar
-        ui.client_config_tool_btn.clicked.connect(self._open_settings_com)
+        ui.device_config_tool_btn.clicked.connect(self._open_settings_com)
         ui.connect_tool_btn.clicked.connect(self._attempt_connect_client)
         ui.disconnect_tool_btn.clicked.connect(self._try_disconnect_client)
-        ui.Add_section_tool_btn.clicked.connect(self._add_range_win)
 
         # action bar
         about = about_win.AboutWin(self)
@@ -316,10 +264,9 @@ class MainWindow(QMainWindow):
         ui.action_import_config.triggered.connect(self._import_config)
         ui.action_export_config.triggered.connect(self._export_config)
         ui.action_quit.triggered.connect(self.close)
-        ui.action_settings_com.triggered.connect(self._open_settings_com)
+        ui.action_settings_device.triggered.connect(self._open_settings_com)
         ui.action_open_com.triggered.connect(self._attempt_connect_client)
         ui.action_close_com.triggered.connect(self._try_disconnect_client)
-        ui.action_add_range.triggered.connect(self._add_range_win)
         return ui
 
 

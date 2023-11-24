@@ -113,6 +113,8 @@ class WinDeviceSettings(QMainWindow):
 
     def _save_settings(self):
         """save the settings close the menu and call the 'call back' function"""
+        self.device.close_connection()
+
         # General settings
         self.device.name = self._ui.device_name.text()
 

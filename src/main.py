@@ -56,7 +56,6 @@ class MainWindow(QMainWindow):
 
     def _on_settings_update(self, auto_connect: bool = False):
         """Is called when the new communications configuration is validated"""
-        self._modbus_client = None  # New settings -> client not connected
         if auto_connect:
             self._attempt_connect_client()
 
@@ -93,13 +92,13 @@ class MainWindow(QMainWindow):
         if not self._connection_thread.isFinished():
             self._connection_thread.terminate()
             print("connection cancel")
-            self._modbus_client = None
+            self._ui.status_bar.showMessage("connection cancel")
 
     def _on_connection_success(self):
         print("Connection opened successfully.")
+        self._ui.status_bar.showMessage("Connection opened successfully.")
         if self._msgbox_connection is not None:
             self._msgbox_connection.close()
-        self._update_range_client_objet()
 
         msg_box = QMessageBox()
         msg_box.setDefaultButton(QMessageBox.Ok)
@@ -110,9 +109,9 @@ class MainWindow(QMainWindow):
 
     def _on_connection_fail(self, ex: Exception):
         print("Connection failed")
+        self._ui.status_bar.showMessage("Connection failed")
         if self._msgbox_connection is not None:
             self._msgbox_connection.close()
-        self._modbus_client = None
 
         # Build error message
         msg = f"The connection failed because an unknown exception occurred.\n\nException: {type(ex).__name__}\nDetails: {ex}"
@@ -134,14 +133,11 @@ class MainWindow(QMainWindow):
 
     def _try_disconnect_client(self):
         """Disconnect the modbus client"""
-        if self._modbus_client is None:
+        self._ui.status_bar.showMessage("Disconnection...")
+        if self._remote_device.modbus_client is None:
             self._ui.status_bar.showMessage("Already disconnected.")
             return
-
-        self._ui.status_bar.showMessage("Disconnection...")
-        self._modbus_client.close()
-        self._modbus_client = None
-        self._update_range_client_objet()
+        self._remote_device.close_connection()
         self._ui.status_bar.showMessage("Disconnected.")
 
     def _export_config(self):

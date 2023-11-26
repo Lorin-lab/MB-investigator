@@ -263,6 +263,13 @@ class MainWindow(QMainWindow):
         ui.action_settings_device.triggered.connect(self._open_settings_com)
         ui.action_open_com.triggered.connect(self._attempt_connect_client)
         ui.action_close_com.triggered.connect(self._try_disconnect_client)
+
+        # tables
+        ui.table_holding_registers.set_variable_list(self._remote_device.variables_holding_registers)
+        ui.table_input_registers.set_variable_list(self._remote_device.variable_input_registers)
+        ui.table_coils.set_variable_list(self._remote_device.variables_coils)
+        ui.table_discrete_input.set_variable_list(self._remote_device.variables_discrete_input)
+
         return ui
 
 

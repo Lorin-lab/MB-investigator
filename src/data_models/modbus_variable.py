@@ -14,19 +14,25 @@ more details.
 You should have received a copy of the GNU General Public License along with MB-investigator. If not,
 see <https://www.gnu.org/licenses/>.
 """
+from __future__ import annotations  # for that the class is recognize as type hint
+import serial
+from modbus_tk import modbus_tcp, modbus_rtu, modbus
+import modbus_tk.defines as cst
 
 
-class RegisterRow:
+class ModbusVariable:
     """
-    Wrap that groups the content of a row
+    Information statement read at a specific modbus address
     """
-    def __init__(self, addr=0, label="", value=0):
+
+    def __init__(self, address: int):
         """
-        Constructor
-        :param addr: register address
-        :param label: label of the register
-        :param value: value of the register
+
+        :param address:
         """
-        self.register_addr = addr
-        self.label = label
-        self.register_value = value
+        self.label = "unknown"
+        self.address = address
+        self.value = None
+        self.register_quantity = 2
+        self.reading_function = cst.READ_HOLDING_REGISTERS
+

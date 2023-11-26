@@ -18,6 +18,8 @@ from __future__ import annotations  # for that RemoteDevice recognize as type hi
 import serial
 from modbus_tk import modbus_tcp, modbus_rtu, modbus
 
+from data_models.modbus_variable import ModbusVariable
+
 
 class RemoteDevice:
     """
@@ -26,6 +28,11 @@ class RemoteDevice:
 
     def __init__(self):
         self.modbus_client = None
+
+        self.variables_holding_registers = [ModbusVariable(11), ModbusVariable(3000)]
+        self.variable_input_registers = [ModbusVariable(22)]
+        self.variables_coils = [ModbusVariable(33)]
+        self.variables_discrete_input = [ModbusVariable(44)]
 
         # General settings
         self.name = "new device"

@@ -23,7 +23,6 @@ import range_ui
 import range_settings_win
 import write_win
 from mb_regesiter_reader import MbRegisterReader
-from register_row import RegisterRow as Row
 
 
 class RangeWin(QDockWidget):
@@ -97,7 +96,7 @@ class RangeWin(QDockWidget):
         self._ui.read_button.setEnabled(True)
         self._reading_thread = None
 
-    def _mb_writing_execute(self, register_row: Row):
+    def _mb_writing_execute(self, register_row):
         """Execute modbus writing function"""
 
         # Checking client

@@ -18,6 +18,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+from modbus_tab import ModbusTab
 from utils import *
 import version
 
@@ -33,20 +34,14 @@ class MainWindowUI(object):
         # ****************************
         # Tabs
         # ****************************
-
-        tabs_name = ["Holding Registers", "Input Registers", "Coils", "Discrete input"]
-        for name in tabs_name:
-            widget = QWidget()
-            layout = QVBoxLayout()
-            widget.setLayout(layout)
-            table = QTableWidget()
-            layout.addWidget(table)
-
-            table.setColumnCount(5)
-            table.setRowCount(10)
-            table.setHorizontalHeaderLabels(["Address", "Label", "Value", "Status", "Action"])
-
-            self.tabs_widget.addTab(widget, name)
+        self.table_holding_registers = ModbusTab()
+        self.table_input_registers = ModbusTab()
+        self.table_coils = ModbusTab()
+        self.table_discrete_input = ModbusTab()
+        self.tabs_widget.addTab(self.table_holding_registers, "Holding Registers")
+        self.tabs_widget.addTab(self.table_input_registers, "Input Registers")
+        self.tabs_widget.addTab(self.table_coils, "Coils")
+        self.tabs_widget.addTab(self.table_discrete_input, "Discrete input")
 
 
         # ****************************

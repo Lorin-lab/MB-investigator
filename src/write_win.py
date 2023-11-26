@@ -21,13 +21,12 @@ import modbus_tk.defines as cst
 
 import write_ui
 import custome_widgets.CustomQValidators as Validators
-from register_row import RegisterRow as Row
 
 
 class WriteWin(QMainWindow):
     """This class is the dialog box to write in a register"""
 
-    def __init__(self, register_row: Row, write_func: cst, callback_method):
+    def __init__(self, register_row, write_func: cst, callback_method):
         super().__init__()
         self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self._register_row = register_row

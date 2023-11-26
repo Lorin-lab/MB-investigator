@@ -18,7 +18,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from datetime import datetime
-from custome_widgets.RegisterTableWidget import RegisterTableWidget
 
 from utils import *
 
@@ -72,7 +71,7 @@ class RangeUI(object):
         # ****************************
         # table
         # ****************************
-        self.table_widget = RegisterTableWidget()
+        #self.table_widget = ModbusVariableTable()
         v_layout.addWidget(self.table_widget)
 
     def log_print(self, text):

@@ -20,7 +20,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import modbus_tk.defines as cst
+
+from custome_widgets.recognizablePushButton import RecognizablePushButton
 from data_models.modbus_variable import ModbusVariable
+from utils import resource_path
 
 
 class ModbusTab(QWidget):
@@ -35,8 +38,11 @@ class ModbusTab(QWidget):
         self.add_button = QPushButton("+")
         self.add_button.clicked.connect(self.add_mb_variable)
         self._table = QTableWidget()
-        self._table.setColumnCount(5)
-        self._table.setHorizontalHeaderLabels(["Address", "Label", "Value", "Status", "Action"])
+        column_list = ["Address", "Label", "Value", "Status", "", ""]
+        self._table.setColumnCount(len(column_list))
+        self._table.setColumnWidth(4, 5)
+        self._table.setColumnWidth(5, 5)
+        self._table.setHorizontalHeaderLabels(column_list)
         self._table.verticalHeader().hide()
         layout.addWidget(self.add_button)
         layout.addWidget(self._table)
@@ -62,10 +68,29 @@ class ModbusTab(QWidget):
         self._table.setItem(index, 1, QTableWidgetItem(mb_variable.label))
         # value
         self._table.setItem(index, 2, QTableWidgetItem(str(mb_variable.value)))
+        # status
+        self._table.setItem(index, 2, QTableWidgetItem("..."))
+        # edit button
+        button = RecognizablePushButton(mb_variable,
+                                        QIcon(resource_path("icons/tune_FILL0_wght400_GRAD0_opsz48.svg")),
+                                        "")
+        #button.RecognizableClicked.connect()
+        self._table.setCellWidget(index, 4, button)
+        # remove button
+        button_remove = RecognizablePushButton(mb_variable,
+                                               QIcon(resource_path("icons/delete_FILL0_wght400_GRAD0_opsz24.svg")),
+                                               "")
+        button_remove.RecognizableClicked.connect(self.remove_mb_variable)
+        self._table.setCellWidget(index, 5, button_remove)
 
     def add_mb_variable(self):
         new = ModbusVariable(8)
         new.address = random.randint(0, 3000)
         new.register_quantity = random.randint(0, 10)
         self._variable_list.append(new)
+        self.redraw()
+
+    def remove_mb_variable(self, mb_variable: ModbusVariable):
+        print(f"u:{mb_variable.address}")
+        self._variable_list.remove(mb_variable)
         self.redraw()

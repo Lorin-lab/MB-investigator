@@ -33,6 +33,8 @@ class ModbusVariable:
         self.label = "unknown"
         self.address = address
         self.value = None
+        self.unit = ""
         self.register_quantity = 2
+        self.interpretation = None
         self.reading_function = cst.READ_HOLDING_REGISTERS
 

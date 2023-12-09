@@ -24,7 +24,7 @@ import custome_widgets.CustomQValidators as Validators
 class RangeSettingsWin(object):
     """This class contains all the widgets and configures them for the range configuration menu."""
     def __init__(self, main_window):
-        main_window.setWindowTitle('Range settings')
+        main_window.setWindowTitle('Modbus variable settings')
         main_layout = QVBoxLayout()
         widget = QWidget()
         widget.setLayout(main_layout)
@@ -34,16 +34,11 @@ class RangeSettingsWin(object):
         # other settings
         # ****************************
         # range name edit
-        self.range_name_edit = QLineEdit()
-        self.range_name_edit.setMaxLength(20)
-
-        # unit id
-        self.unit_id_edit = QLineEdit()
-        self.unit_id_edit.setValidator(Validators.DecValidator(0, 255))
+        self.range_label_edit = QLineEdit()
+        self.range_label_edit.setMaxLength(25)
 
         form_layout = QFormLayout()
-        form_layout.addRow("Range name", self.range_name_edit)
-        form_layout.addRow("Unit ID", self.unit_id_edit)
+        form_layout.addRow("Label", self.range_label_edit)
         main_layout.addLayout(form_layout)
 
         # ****************************
@@ -69,9 +64,8 @@ class RangeSettingsWin(object):
         self.start_address_edit = QIntegerLineEdit()
         self.start_address_edit.setValidator(Validators.DecValidator(0, 65535))
 
-        # Starting address edit
-        self.end_address_edit = QIntegerLineEdit()
-        self.end_address_edit.setValidator(Validators.DecValidator(0, 65535))
+        # End address
+        self.end_address_label = QLabel("0")
 
         # Quantity edit
         self.quantity_edit = QIntegerLineEdit()
@@ -80,27 +74,28 @@ class RangeSettingsWin(object):
         # form Layout
         form_layout = QFormLayout()
         form_layout.addRow("Address display", buttons_layout)
-        form_layout.addRow("Starting address", self.start_address_edit)
-        form_layout.addRow("End address", self.end_address_edit)
-        form_layout.addRow("Quantity of register", self.quantity_edit)
+        form_layout.addRow("Address", self.start_address_edit)
+        form_layout.addRow("Quantity", self.quantity_edit)
+        form_layout.addRow("End address", self.end_address_label)
         addr_group_box.setLayout(form_layout)
 
         # ****************************
         # Modbus function group
         # ****************************
-        md_fn_group_box = QGroupBox("Modbus function")
+        md_fn_group_box = QGroupBox("Interpretation")
         main_layout.addWidget(md_fn_group_box)
 
-        # Read function list
-        self.read_func_cb = QCustomComboBox()
+        # Interpretation list
+        self.interpretaton_cb = QCustomComboBox()
 
-        # write function list
-        self.write_func_cb = QCustomComboBox()
+        # unit
+        self.unit_label_edit = QLineEdit()
+        self.unit_label_edit.setMaxLength(10)
 
         # form Layout
         form_layout = QFormLayout()
-        form_layout.addRow("Read function", self.read_func_cb)
-        form_layout.addRow("Write function", self.write_func_cb)
+        form_layout.addRow("Interpretation", self.interpretaton_cb)
+        form_layout.addRow("Unit", self.unit_label_edit)
         md_fn_group_box.setLayout(form_layout)
 
         # ****************************

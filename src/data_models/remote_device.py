@@ -29,10 +29,10 @@ class RemoteDevice:
     def __init__(self):
         self.modbus_client = None
 
-        self.variables_holding_registers = [ModbusVariable(11), ModbusVariable(3000)]
-        self.variable_input_registers = [ModbusVariable(22)]
-        self.variables_coils = [ModbusVariable(33)]
-        self.variables_discrete_input = [ModbusVariable(44)]
+        self.variables_holding_registers = []
+        self.variable_input_registers = []
+        self.variables_coils = []
+        self.variables_discrete_input = []
 
         # General settings
         self.name = "new device"

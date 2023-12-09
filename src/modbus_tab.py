@@ -24,6 +24,7 @@ import modbus_tk.defines as cst
 from custome_widgets.recognizablePushButton import RecognizablePushButton
 from data_models.modbus_variable import ModbusVariable
 from utils import resource_path
+from win_mb_variable_settings import WinMbVariableSettings
 
 
 class ModbusTab(QWidget):
@@ -31,6 +32,7 @@ class ModbusTab(QWidget):
         super(ModbusTab, self).__init__()
 
         self._variable_list = []
+        self._mb_variable_win = WinMbVariableSettings(self, self.redraw)
 
         # ui
         layout = QVBoxLayout()
@@ -74,7 +76,7 @@ class ModbusTab(QWidget):
         button = RecognizablePushButton(mb_variable,
                                         QIcon(resource_path("icons/tune_FILL0_wght400_GRAD0_opsz48.svg")),
                                         "")
-        #button.RecognizableClicked.connect()
+        button.RecognizableClicked.connect(self.edit_mb_variable)
         self._table.setCellWidget(index, 4, button)
         # remove button
         button_remove = RecognizablePushButton(mb_variable,
@@ -84,9 +86,8 @@ class ModbusTab(QWidget):
         self._table.setCellWidget(index, 5, button_remove)
 
     def add_mb_variable(self):
-        new = ModbusVariable(8)
-        new.address = random.randint(0, 3000)
-        new.register_quantity = random.randint(0, 10)
+        new = ModbusVariable(0)
+        self.edit_mb_variable(new)
         self._variable_list.append(new)
         self.redraw()
 
@@ -94,3 +95,6 @@ class ModbusTab(QWidget):
         print(f"u:{mb_variable.address}")
         self._variable_list.remove(mb_variable)
         self.redraw()
+
+    def edit_mb_variable(self, mb_variable: ModbusVariable):
+        self._mb_variable_win.open_mb_variable(mb_variable)
